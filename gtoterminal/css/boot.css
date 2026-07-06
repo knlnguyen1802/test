@@ -1,0 +1,371 @@
+/* ═══════════════════ BOOT SCREEN ═══════════════════ */
+
+#boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  overflow: hidden;
+}
+
+/* CRT vignette */
+#boot-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Scanlines */
+#boot-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+}
+
+/* ── Boot Content Container ── */
+.boot-content {
+  position: relative;
+  z-index: 2;
+  width: 90%;
+  max-width: 860px;
+  padding: 24px 40px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.boot-content.visible {
+  opacity: 1;
+}
+
+/* ── Main Two-Column: text left, logo top-right ── */
+.boot-main {
+  display: flex;
+  gap: 40px;
+}
+
+.boot-main-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.boot-main-right {
+  flex-shrink: 0;
+  align-self: flex-start;
+  text-align: center;
+  padding-top: 4px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.boot-main-right.visible {
+  opacity: 1;
+}
+
+/* ── Text Lines ── */
+.boot-line {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: #ff8c00;
+  white-space: pre;
+  opacity: 0;
+  text-shadow: 0 0 4px rgba(255, 140, 0, 0.12);
+  transform: translateY(1px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.boot-line.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.boot-line.dim {
+  color: #996600;
+  text-shadow: none;
+}
+
+.boot-line.bright {
+  color: #ffaa33;
+  text-shadow: 0 0 4px rgba(255, 140, 0, 0.15);
+}
+
+/* Module name column */
+.boot-module-name {
+  color: #cc7000;
+}
+
+/* Progress bar — filled */
+.boot-bar {
+  color: #ff8c00;
+  text-shadow: 0 0 2px rgba(255, 140, 0, 0.15);
+}
+
+/* Progress bar — empty */
+.boot-bar-empty {
+  color: #291c00;
+}
+
+/* Module description */
+.boot-module-desc {
+  color: #7a5500;
+  font-size: 11px;
+}
+
+/* ── Logo Text ── */
+.boot-logo-text {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 82px;
+  font-weight: 700;
+  line-height: 1;
+  color: #ff8c00;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 6px rgba(255, 140, 0, 0.15);
+  animation: logo-glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes logo-glow {
+  0% {
+    text-shadow:
+      0 0 4px rgba(255, 140, 0, 0.1),
+      0 0 12px rgba(255, 140, 0, 0.05);
+  }
+  100% {
+    text-shadow:
+      0 0 8px rgba(255, 140, 0, 0.18),
+      0 0 20px rgba(255, 140, 0, 0.08);
+  }
+}
+
+.boot-logo-subtitle {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 0.35em;
+  color: #996600;
+  margin-top: 6px;
+}
+
+.boot-logo-version {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 10px;
+  color: #5c4000;
+  letter-spacing: 0.1em;
+  margin-top: 8px;
+}
+
+/* ── Status Section ── */
+.boot-status-section {
+  transition: opacity 0.4s ease;
+  margin-top: 8px;
+}
+
+.boot-status-inner {
+  padding: 12px 0;
+}
+
+/* Separator */
+.boot-sep {
+  height: 1px;
+  background: #2e2000;
+}
+
+/* System status labels */
+.boot-sys-label {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: #cc7000;
+  margin-bottom: 10px;
+}
+
+.boot-sys-table {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 11px;
+  color: #7a5500;
+  line-height: 1.8;
+}
+
+.boot-sys-table .boot-stat-row {
+  display: flex;
+  gap: 8px;
+}
+
+.boot-sys-table .boot-stat-label {
+  color: #7a5500;
+  min-width: 100px;
+}
+
+.boot-sys-table .boot-stat-value {
+  color: #ff8c00;
+}
+
+.boot-sys-ready {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 10px;
+  color: #4af6c3;
+  margin-top: 12px;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 4px rgba(74, 246, 195, 0.15);
+}
+
+/* ── Enter Prompt ── */
+.boot-prompt {
+  text-align: center;
+  margin-top: 20px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.boot-prompt.visible {
+  opacity: 1;
+}
+
+.boot-prompt-text {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: #ff8c00;
+  text-shadow: 0 0 4px rgba(255, 140, 0, 0.12);
+  cursor: pointer;
+  border: 1px solid #3d2a00;
+  padding: 8px 28px;
+  display: inline-block;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.boot-prompt-text:hover {
+  border-color: #ff8c00;
+  background: rgba(255, 140, 0, 0.06);
+  text-shadow: 0 0 6px rgba(255, 140, 0, 0.2);
+}
+
+/* Blinking block cursor */
+.boot-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  background: #ff8c00;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: boot-cursor-blink 1s step-end infinite;
+}
+
+@keyframes boot-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── Dismiss — simple fade ── */
+#boot-screen.shutting-down {
+  animation: boot-fade-out 0.35s ease-out forwards;
+}
+
+@keyframes boot-fade-out {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Skip Hint ── */
+.boot-skip {
+  position: absolute;
+  bottom: 18px;
+  right: 24px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 9px;
+  color: #2e2000;
+  letter-spacing: 0.08em;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  user-select: none;
+}
+
+.boot-skip.visible {
+  opacity: 1;
+}
+
+/* ── Responsive ── */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .boot-content {
+    max-width: 100%;
+    padding: 20px 28px;
+  }
+  .boot-logo-text {
+    font-size: 64px;
+  }
+  .boot-main {
+    gap: 28px;
+  }
+}
+
+/* Mobile — stack: logo on top, text below */
+@media (max-width: 580px) {
+  .boot-content {
+    padding: 16px 20px;
+  }
+  .boot-main {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .boot-main-right {
+    order: -1;
+    align-self: center;
+  }
+  .boot-line {
+    font-size: 9px;
+    line-height: 1.5;
+  }
+  .boot-logo-text {
+    font-size: 52px;
+  }
+  .boot-logo-subtitle {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+  }
+  .boot-prompt-text {
+    font-size: 10px;
+    padding: 6px 20px;
+  }
+}
+
+/* Short screens */
+@media (max-height: 600px) {
+  .boot-content {
+    padding: 10px 24px;
+  }
+  .boot-line {
+    line-height: 1.4;
+  }
+  .boot-status-inner {
+    padding: 8px 0;
+  }
+  .boot-prompt {
+    margin-top: 12px;
+  }
+  .boot-logo-text {
+    font-size: 64px;
+  }
+}

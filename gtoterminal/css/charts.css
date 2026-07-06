@@ -1,0 +1,277 @@
+/* GTOTerminal — Charts and Analytics */
+
+.chart-container {
+  width: 100%;
+  position: relative;
+}
+
+/* Horizontal bar chart */
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-xs);
+}
+
+.bar-label {
+  width: 32px;
+  text-align: right;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.bar-track {
+  flex: 1;
+  height: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-dim);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width 0.6s ease;
+  position: relative;
+}
+
+.bar-fill.fill-high { background: var(--green); }
+.bar-fill.fill-mid { background: var(--accent); }
+.bar-fill.fill-low { background: var(--red); }
+
+.bar-value {
+  width: 36px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* Accuracy chart labels */
+.chart-header {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--accent);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chart-header .chart-period {
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+/* Canvas chart wrapper */
+.canvas-chart {
+  width: 100%;
+  height: 140px;
+  position: relative;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.canvas-chart canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Weakness report */
+.weakness-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weakness-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-dim);
+  border-left: 3px solid var(--red);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+}
+
+.weakness-item .weakness-icon {
+  color: var(--red);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+.weakness-item .weakness-text {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.weakness-item .weakness-pct {
+  font-weight: 700;
+  color: var(--red);
+  flex-shrink: 0;
+}
+
+/* Session history entries */
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.session-entry {
+  display: grid;
+  grid-template-columns: 70px 60px 50px 1fr 50px;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 8px;
+  font-size: var(--font-size-xs);
+  border-bottom: 1px solid var(--border-dim);
+}
+
+.session-entry:hover {
+  background: var(--bg-hover);
+}
+
+.session-date { color: var(--text-secondary); }
+.session-type { color: var(--accent); font-weight: 600; text-transform: uppercase; }
+.session-count { color: var(--text-dim); }
+.session-bar {
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.session-bar-fill {
+  height: 100%;
+  border-radius: 1px;
+}
+.session-accuracy { font-weight: 700; text-align: right; }
+
+/* Training plan cards */
+.plan-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.plan-name {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 4px;
+}
+
+.plan-meta {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.plan-progress {
+  margin-bottom: 6px;
+}
+
+.plan-progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+}
+
+/* Drill list items */
+.drill-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  transition: border-color var(--transition-fast);
+}
+
+.drill-item:hover {
+  border-color: var(--border-primary);
+}
+
+.drill-item-num {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-glow);
+  border: 1px solid var(--accent-dim);
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.drill-item-info {
+  flex: 1;
+}
+
+.drill-item-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.drill-item-desc {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.drill-item-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* Clickable session rows */
+.clickable-row {
+  cursor: pointer;
+}
+.clickable-row:hover td {
+  background: var(--bg-hover);
+}
+.session-detail-row td {
+  padding: 0 !important;
+  background: var(--bg-primary);
+}
+.session-detail-row .data-table {
+  border: none;
+  margin: 0;
+}
+.session-detail-row .data-table td,
+.session-detail-row .data-table th {
+  font-size: 9px;
+  padding: 3px 6px;
+}

@@ -1,0 +1,4 @@
+# Keep built WASM output in repo (ships with app)
+# Only ignore build temp files
+*.d.ts
+package.json

@@ -1,0 +1,27 @@
+[package]
+name = "gto-solver-native"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-or-later"
+description = "Native (non-WASM) postflop solver for GTOTerminal batch precompute"
+
+# Native binary: uses the system allocator (host RAM) instead of the wasm32
+# custom-alloc bump arena, so it is NOT limited to the 4 GiB wasm32 address
+# space. Same postflop-solver engine as the WASM build for result parity.
+[[bin]]
+name = "gto-solver-native"
+path = "src/main.rs"
+
+[dependencies]
+# No `custom-alloc` feature (that is wasm-only and imposes the 4 GiB cap).
+# Enable `rayon` so the CFR solve runs multi-threaded across all CPU cores
+# (the WASM build is single-threaded for browser compatibility). Control the
+# thread count at runtime with the RAYON_NUM_THREADS env var if needed.
+postflop-solver = { git = "https://github.com/b-inary/postflop-solver", default-features = false, features = ["rayon"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3

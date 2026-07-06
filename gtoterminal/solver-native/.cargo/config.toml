@@ -1,0 +1,8 @@
+# Build the native solver tuned for THIS machine's CPU (enables AVX2/AVX-512,
+# FMA, etc.). Typically ~10-20% faster CFR than a generic baseline build.
+#
+# Trade-off: the resulting binary is NOT portable to an older/different CPU.
+# That's fine for a local precompute tool. Delete this file (or comment the
+# line out) if you need a portable binary.
+[build]
+rustflags = ["-C", "target-cpu=native"]

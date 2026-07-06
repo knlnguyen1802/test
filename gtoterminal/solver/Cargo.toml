@@ -1,0 +1,20 @@
+[package]
+name = "gto-solver-wasm"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-or-later"
+description = "WASM wrapper around postflop-solver for GTOTerminal"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+postflop-solver = { git = "https://github.com/b-inary/postflop-solver", features = ["custom-alloc"], default-features = false }
+wasm-bindgen = "0.2.87"
+
+[profile.release]
+codegen-units = 1
+lto = true
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O4"]

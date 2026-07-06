@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GTOTerminal — Poker Training Suite</title>
+  <link rel="stylesheet" href="css/terminal.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/hand-matrix.css">
+  <link rel="stylesheet" href="css/charts.css">
+  <link rel="stylesheet" href="css/learn.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/stream.css">
+  <link rel="stylesheet" href="css/boot.css">
+</head>
+<body>
+
+<!-- ═══════════════════ BOOT SCREEN ═══════════════════ -->
+<div id="boot-screen">
+  <div class="boot-content">
+    <div class="boot-main">
+      <div class="boot-main-left">
+        <div id="boot-lines"></div>
+      </div>
+      <div class="boot-main-right">
+        <div class="boot-logo-text">GTO</div>
+        <div class="boot-logo-subtitle">T E R M I N A L</div>
+        <div class="boot-logo-version">Poker Training Suite v2.0</div>
+      </div>
+    </div>
+
+    <div class="boot-status-section" style="opacity:0;">
+      <div class="boot-sep"></div>
+      <div class="boot-status-inner">
+        <div class="boot-sys-label">SYSTEM STATUS</div>
+        <div class="boot-sys-table" id="boot-stats"></div>
+        <div class="boot-sys-ready">Ready.</div>
+      </div>
+      <div class="boot-sep"></div>
+    </div>
+
+    <div class="boot-prompt">
+      <span class="boot-prompt-text">PRESS ENTER TO CONTINUE <span class="boot-cursor"></span></span>
+    </div>
+  </div>
+  <div class="boot-skip">PRESS ANY KEY TO SKIP</div>
+</div>
+
+<div id="app">
+
+  <!-- ═══════════════════ NAVIGATION BAR ═══════════════════ -->
+  <div id="nav-bar">
+    <div class="logo">GTO<span>TERMINAL</span></div>
+    <div class="nav-tabs">
+      <div class="nav-tabs-main">
+        <div class="nav-tab active" data-view="explore">EXPLORE<span class="tab-key">1</span></div>
+        <div class="nav-tab" data-view="drill">DRILL<span class="tab-key">2</span></div>
+        <div class="nav-tab" data-view="playthrough">PLAY<span class="tab-key">3</span></div>
+        <div class="nav-tab" data-view="plans">PLANS<span class="tab-key">4</span></div>
+        <div class="nav-tab" data-view="stats">STATS<span class="tab-key">5</span></div>
+      </div>
+      <div class="nav-tab-separator"></div>
+      <div class="nav-tabs-secondary">
+        <div class="nav-tab" data-view="learn">LEARN<span class="tab-key">6</span></div>
+        <div class="nav-tab" data-view="stream">STREAM<span class="tab-key">7</span></div>
+      </div>
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn" id="btn-help" title="Help">?</button>
+      <button class="nav-btn" id="btn-settings" title="Settings">&#9881;</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ WORKSPACE ═══════════════════ -->
+  <div id="workspace">
+
+    <!-- ────────── VIEW 1: EXPLORE ────────── -->
+    <div id="view-explore" class="view active" style="grid-template-columns: 25% 75%;">
+
+      <!-- LEFT: Filters -->
+      <div class="panel">
+        <div class="panel-header">FILTERS</div>
+        <div class="panel-body" style="padding: 16px;">
+          <div class="explore-filter-group">
+            <div class="config-row" style="margin-bottom: 14px;">
+              <label class="form-label">Mode</label>
+              <div class="toggle-group" id="explore-mode">
+                <div class="toggle-option active" data-value="preflop">Preflop</div>
+                <div class="toggle-option" data-value="pushfold">Push/Fold</div>
+                <div class="toggle-option" data-value="solver">Postflop</div>
+              </div>
+            </div>
+            <div id="explore-preflop-filters">
+              <div class="config-row" style="margin-bottom: 10px;">
+                <label class="form-label">Format</label>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div class="toggle-group" id="explore-format">
+                    <div class="toggle-option active" data-value="cash">Cash</div>
+                    <div class="toggle-option" data-value="mtt">MTT</div>
+                  </div>
+                  <div class="icm-toggle hidden" id="explore-icm-toggle">
+                    <label class="toggle-switch" title="ICM adjustments">
+                      <input type="checkbox" id="explore-icm-check" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                    <span style="font-size: 10px; color: var(--text-dim);">ICM</span>
+                  </div>
+                </div>
+              </div>
+              <div class="config-row" style="margin-bottom: 10px;">
+                <label class="form-label">Stack</label>
+                <div class="toggle-group" id="explore-stack">
+                  <div class="toggle-option active" data-value="100bb">100bb</div>
+                </div>
+              </div>
+              <div class="config-row" style="margin-bottom: 10px;">
+                <label class="form-label">Position</label>
+                <div class="toggle-group" id="explore-position">
+                  <div class="toggle-option active" data-value="UTG">UTG</div>
+                  <div class="toggle-option" data-value="MP">MP</div>
+                  <div class="toggle-option" data-value="CO">CO</div>
+                  <div class="toggle-option" data-value="BTN">BTN</div>
+                  <div class="toggle-option" data-value="SB">SB</div>
+                </div>
+              </div>
+              <div class="config-row" style="margin-bottom: 10px;">
+                <label class="form-label">Action</label>
+                <div class="toggle-group" id="explore-action">
+                  <div class="toggle-option active" data-value="rfi">RFI</div>
+                  <div class="toggle-option" data-value="vs_raise">vs Raise</div>
+                  <div class="toggle-option" data-value="vs_3bet">vs 3-Bet</div>
+                  <div class="toggle-option" data-value="vs_4bet">vs 4-Bet</div>
+                </div>
+              </div>
+              <div class="config-row hidden" id="explore-villain-row" style="margin-bottom: 10px;">
+                <label class="form-label">Villain</label>
+                <div class="toggle-group" id="explore-villain">
+                  <div class="toggle-option active" data-value="UTG">UTG</div>
+                  <div class="toggle-option" data-value="MP">MP</div>
+                  <div class="toggle-option" data-value="CO">CO</div>
+                  <div class="toggle-option" data-value="BTN">BTN</div>
+                  <div class="toggle-option" data-value="SB">SB</div>
+                  <div class="toggle-option" data-value="BB">BB</div>
+                </div>
+              </div>
+            </div>
+            <div id="explore-pushfold-filters" class="hidden">
+              <div class="config-row" style="margin-bottom: 10px;">
+                <label class="form-label">Stack (BB)</label>
+                <div class="toggle-group" id="explore-pf-stack">
+                  <div class="toggle-option" data-value="5">5bb</div>
+                  <div class="toggle-option active" data-value="10">10bb</div>
+                  <div class="toggle-option" data-value="15">15bb</div>
+                  <div class="toggle-option" data-value="20">20bb</div>
+                </div>
+              </div>
+              <div class="config-row" style="margin-bottom: 10px;">
+                <label class="form-label">Position</label>
+                <div class="toggle-group" id="explore-pf-position">
+                  <div class="toggle-option active" data-value="UTG">UTG</div>
+                  <div class="toggle-option" data-value="MP">MP</div>
+                  <div class="toggle-option" data-value="CO">CO</div>
+                  <div class="toggle-option" data-value="BTN">BTN</div>
+                  <div class="toggle-option" data-value="SB">SB</div>
+                </div>
+              </div>
+            </div>
+            <!-- Solver filters (GTO Wizard-style: toggle filters, auto-solve) -->
+            <div id="explore-solver-filters" class="hidden">
+              <div class="config-row" style="margin-bottom: 10px;">
+                <label class="form-label">Format</label>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div class="toggle-group" id="solver-format">
+                    <div class="toggle-option active" data-value="cash">Cash</div>
+                    <div class="toggle-option" data-value="mtt">MTT</div>
+                  </div>
+                  <div class="icm-toggle hidden" id="solver-icm-toggle">
+                    <label class="toggle-switch" title="ICM adjustments">
+                      <input type="checkbox" id="solver-icm-check" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                    <span style="font-size: 10px; color: var(--text-dim);">ICM</span>
+                  </div>
+                </div>
+              </div>
+              <div class="config-row" style="margin-bottom: 10px;">
+                <label class="form-label">Stack</label>
+                <div class="toggle-group" id="solver-depth">
+                  <div class="toggle-option active" data-value="100bb">100bb</div>
+                </div>
+              </div>
+              <div class="config-row" style="margin-bottom: 10px;">
+                <label class="form-label">Matchup</label>
+                <div class="toggle-group" id="solver-matchup">
+                  <div class="toggle-option active" data-value="SB_vs_BB">SBvBB</div>
+                  <div class="toggle-option" data-value="BTN_vs_BB">BTNvBB</div>
+                  <div class="toggle-option" data-value="CO_vs_BB">COvBB</div>
+                  <div class="toggle-option" data-value="UTG_vs_BB">UTGvBB</div>
+                  <div class="toggle-option" data-value="BTN_vs_SB">BTNvSB</div>
+                </div>
+              </div>
+              <div class="config-row" style="margin-bottom: 10px;">
+                <label class="form-label">Board</label>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div id="solver-board-preview" class="solver-selected-cards" style="flex:1;"></div>
+                  <button class="btn btn-xs btn-dim" id="solver-open-board-picker" style="padding:5px 10px; font-size:9px; letter-spacing:0.1em; white-space:nowrap;">CHANGE</button>
+                </div>
+              </div>
+              <div id="solver-loading" class="hidden" style="margin-top: 10px; text-align: center;">
+                <span class="solver-spinner"></span>
+                <span style="font-size: 10px; color: var(--text-dim); margin-left: 6px;">Solving...</span>
+              </div>
+            </div>
+          </div>
+          <div id="explore-preflop-stats" style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border-dim);">
+            <div class="stat-row">
+              <span class="stat-label">COMBOS IN RANGE</span>
+              <span class="stat-value text-orange" id="explore-combo-count">--</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">% OF HANDS</span>
+              <span class="stat-value text-orange" id="explore-hand-pct">--</span>
+            </div>
+            <div class="stat-row" id="explore-preflop-source-row" style="margin-top: 6px;">
+              <span class="stat-label">SOURCE</span>
+              <span class="stat-value" id="explore-preflop-source" style="font-size: 9px; color: var(--text-dim);">Curated</span>
+            </div>
+            <div style="margin-top: 12px;">
+              <button class="btn btn-xs btn-dim" id="btn-explore-preflop-solve" style="padding: 4px 10px; font-size: 9px; letter-spacing: 0.1em; width: 100%;">SOLVE WITH ENGINE</button>
+              <div id="explore-preflop-solve-progress" class="hidden" style="margin-top: 6px; text-align: center;">
+                <span class="solver-spinner" style="display:inline-block;width:12px;height:12px;"></span>
+                <span style="font-size: 9px; color: var(--text-dim); margin-left: 4px;" id="explore-preflop-solve-status">Solving...</span>
+              </div>
+            </div>
+          </div>
+          <div id="explore-solver-stats" class="hidden" style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--border-dim);">
+            <div class="stat-row">
+              <span class="stat-label">MATCHUP</span>
+              <span class="stat-value text-orange" id="solver-stat-matchup">--</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">BOARD</span>
+              <span class="stat-value text-orange" id="solver-stat-board">--</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">TEXTURE</span>
+              <span class="stat-value text-orange" id="solver-stat-texture">--</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">OOP EV</span>
+              <span class="stat-value text-orange" id="solver-stat-oop-ev">--</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">IP EV</span>
+              <span class="stat-value text-orange" id="solver-stat-ip-ev">--</span>
+            </div>
+            <div class="stat-row" style="opacity: 0.4; font-size: 9px;">
+              <span class="stat-label">ACCURACY</span>
+              <span class="stat-value" id="solver-stat-accuracy">--</span>
+            </div>
+            <div id="solver-composition" class="hidden" style="margin-top: 12px; border-top: 1px solid var(--border-dim); padding-top: 10px;">
+              <div class="stat-label" style="margin-bottom: 6px; font-size: 9px; letter-spacing: 0.1em; color: var(--text-secondary);">OOP RANGE COMPOSITION</div>
+              <div class="freq-bar-group">
+                <div class="freq-bar-item"><span class="freq-bar-label">Monsters</span><div class="freq-bar-track"><div class="freq-bar-fill fill-raise" id="solver-comp-monsters" style="width:0%"></div></div><span class="freq-bar-value" id="solver-comp-monsters-val">--</span></div>
+                <div class="freq-bar-item"><span class="freq-bar-label">Strong</span><div class="freq-bar-track"><div class="freq-bar-fill fill-call" id="solver-comp-strong" style="width:0%"></div></div><span class="freq-bar-value" id="solver-comp-strong-val">--</span></div>
+                <div class="freq-bar-item"><span class="freq-bar-label">Medium</span><div class="freq-bar-track"><div class="freq-bar-fill fill-check" id="solver-comp-medium" style="width:0%"></div></div><span class="freq-bar-value" id="solver-comp-medium-val">--</span></div>
+                <div class="freq-bar-item"><span class="freq-bar-label">Draws</span><div class="freq-bar-track"><div class="freq-bar-fill fill-bet" id="solver-comp-draws" style="width:0%"></div></div><span class="freq-bar-value" id="solver-comp-draws-val">--</span></div>
+                <div class="freq-bar-item"><span class="freq-bar-label">Weak</span><div class="freq-bar-track"><div class="freq-bar-fill fill-fold" id="solver-comp-weak" style="width:0%"></div></div><span class="freq-bar-value" id="solver-comp-weak-val">--</span></div>
+                <div class="freq-bar-item"><span class="freq-bar-label">Air</span><div class="freq-bar-track"><div class="freq-bar-fill" style="width:0%; background: var(--text-dim);" id="solver-comp-air"></div></div><span class="freq-bar-value" id="solver-comp-air-val">--</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Matrix + Details Column -->
+      <div class="panel explore-right-column">
+        <div class="explore-matrix-section">
+          <div class="panel-header" style="display:flex;align-items:center;gap:8px;">RANGE MATRIX <span class="panel-tag" id="explore-matrix-label">RFI — CO — 100BB</span><span id="explore-board-display" class="hidden" style="display:none;margin-left:auto;"></span></div>
+        <div class="panel-body" style="padding: 14px 16px;">
+          <div class="hand-matrix-container" style="position:relative;">
+            <div id="explore-matrix-loading" class="hidden" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:10;flex-direction:column;gap:8px;">
+              <span class="solver-spinner"></span>
+              <span style="font-size:10px;color:var(--text-dim);">Solving...</span>
+            </div>
+            <table class="hand-matrix" id="explore-matrix-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>A</th><th>K</th><th>Q</th><th>J</th><th>T</th><th>9</th><th>8</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Row A -->
+                <tr>
+                  <th>A</th>
+                  <td class="freq-0 hand-pair" data-hand="AA">AA</td>
+                  <td class="freq-0 hand-suited" data-hand="AKs">AKs</td>
+                  <td class="freq-0 hand-suited" data-hand="AQs">AQs</td>
+                  <td class="freq-0 hand-suited" data-hand="AJs">AJs</td>
+                  <td class="freq-0 hand-suited" data-hand="ATs">ATs</td>
+                  <td class="freq-0 hand-suited" data-hand="A9s">A9s</td>
+                  <td class="freq-0 hand-suited" data-hand="A8s">A8s</td>
+                  <td class="freq-0 hand-suited" data-hand="A7s">A7s</td>
+                  <td class="freq-0 hand-suited" data-hand="A6s">A6s</td>
+                  <td class="freq-0 hand-suited" data-hand="A5s">A5s</td>
+                  <td class="freq-0 hand-suited" data-hand="A4s">A4s</td>
+                  <td class="freq-0 hand-suited" data-hand="A3s">A3s</td>
+                  <td class="freq-0 hand-suited" data-hand="A2s">A2s</td>
+                </tr>
+                <!-- Row K -->
+                <tr>
+                  <th>K</th>
+                  <td class="freq-0" data-hand="AKo">AKo</td>
+                  <td class="freq-0 hand-pair" data-hand="KK">KK</td>
+                  <td class="freq-0 hand-suited" data-hand="KQs">KQs</td>
+                  <td class="freq-0 hand-suited" data-hand="KJs">KJs</td>
+                  <td class="freq-0 hand-suited" data-hand="KTs">KTs</td>
+                  <td class="freq-0 hand-suited" data-hand="K9s">K9s</td>
+                  <td class="freq-0 hand-suited" data-hand="K8s">K8s</td>
+                  <td class="freq-0 hand-suited" data-hand="K7s">K7s</td>
+                  <td class="freq-0 hand-suited" data-hand="K6s">K6s</td>
+                  <td class="freq-0 hand-suited" data-hand="K5s">K5s</td>
+                  <td class="freq-0 hand-suited" data-hand="K4s">K4s</td>
+                  <td class="freq-0 hand-suited" data-hand="K3s">K3s</td>
+                  <td class="freq-0 hand-suited" data-hand="K2s">K2s</td>
+                </tr>
+                <!-- Row Q -->
+                <tr>
+                  <th>Q</th>
+                  <td class="freq-0" data-hand="AQo">AQo</td>
+                  <td class="freq-0" data-hand="KQo">KQo</td>
+                  <td class="freq-0 hand-pair" data-hand="QQ">QQ</td>
+                  <td class="freq-0 hand-suited" data-hand="QJs">QJs</td>
+                  <td class="freq-0 hand-suited" data-hand="QTs">QTs</td>
+                  <td class="freq-0 hand-suited" data-hand="Q9s">Q9s</td>
+                  <td class="freq-0 hand-suited" data-hand="Q8s">Q8s</td>
+                  <td class="freq-0 hand-suited" data-hand="Q7s">Q7s</td>
+                  <td class="freq-0 hand-suited" data-hand="Q6s">Q6s</td>
+                  <td class="freq-0 hand-suited" data-hand="Q5s">Q5s</td>
+                  <td class="freq-0 hand-suited" data-hand="Q4s">Q4s</td>
+                  <td class="freq-0 hand-suited" data-hand="Q3s">Q3s</td>
+                  <td class="freq-0 hand-suited" data-hand="Q2s">Q2s</td>
+                </tr>
+                <!-- Row J -->
+                <tr>
+                  <th>J</th>
+                  <td class="freq-0" data-hand="AJo">AJo</td>
+                  <td class="freq-0" data-hand="KJo">KJo</td>
+                  <td class="freq-0" data-hand="QJo">QJo</td>
+                  <td class="freq-0 hand-pair" data-hand="JJ">JJ</td>
+                  <td class="freq-0 hand-suited" data-hand="JTs">JTs</td>
+                  <td class="freq-0 hand-suited" data-hand="J9s">J9s</td>
+                  <td class="freq-0 hand-suited" data-hand="J8s">J8s</td>
+                  <td class="freq-0 hand-suited" data-hand="J7s">J7s</td>
+                  <td class="freq-0 hand-suited" data-hand="J6s">J6s</td>
+                  <td class="freq-0 hand-suited" data-hand="J5s">J5s</td>
+                  <td class="freq-0 hand-suited" data-hand="J4s">J4s</td>
+                  <td class="freq-0 hand-suited" data-hand="J3s">J3s</td>
+                  <td class="freq-0 hand-suited" data-hand="J2s">J2s</td>
+                </tr>
+                <!-- Row T -->
+                <tr>
+                  <th>T</th>
+                  <td class="freq-0" data-hand="ATo">ATo</td>
+                  <td class="freq-0" data-hand="KTo">KTo</td>
+                  <td class="freq-0" data-hand="QTo">QTo</td>
+                  <td class="freq-0" data-hand="JTo">JTo</td>
+                  <td class="freq-0 hand-pair" data-hand="TT">TT</td>
+                  <td class="freq-0 hand-suited" data-hand="T9s">T9s</td>
+                  <td class="freq-0 hand-suited" data-hand="T8s">T8s</td>
+                  <td class="freq-0 hand-suited" data-hand="T7s">T7s</td>
+                  <td class="freq-0 hand-suited" data-hand="T6s">T6s</td>
+                  <td class="freq-0 hand-suited" data-hand="T5s">T5s</td>
+                  <td class="freq-0 hand-suited" data-hand="T4s">T4s</td>
+                  <td class="freq-0 hand-suited" data-hand="T3s">T3s</td>
+                  <td class="freq-0 hand-suited" data-hand="T2s">T2s</td>
+                </tr>
+                <!-- Row 9 -->
+                <tr>
+                  <th>9</th>
+                  <td class="freq-0" data-hand="A9o">A9o</td>
+                  <td class="freq-0" data-hand="K9o">K9o</td>
+                  <td class="freq-0" data-hand="Q9o">Q9o</td>
+                  <td class="freq-0" data-hand="J9o">J9o</td>
+                  <td class="freq-0" data-hand="T9o">T9o</td>
+                  <td class="freq-0 hand-pair" data-hand="99">99</td>
+                  <td class="freq-0 hand-suited" data-hand="98s">98s</td>
+                  <td class="freq-0 hand-suited" data-hand="97s">97s</td>
+                  <td class="freq-0 hand-suited" data-hand="96s">96s</td>
+                  <td class="freq-0 hand-suited" data-hand="95s">95s</td>
+                  <td class="freq-0 hand-suited" data-hand="94s">94s</td>
+                  <td class="freq-0 hand-suited" data-hand="93s">93s</td>
+                  <td class="freq-0 hand-suited" data-hand="92s">92s</td>
+                </tr>
+                <!-- Row 8 -->
+                <tr>
+                  <th>8</th>
+                  <td class="freq-0" data-hand="A8o">A8o</td>
+                  <td class="freq-0" data-hand="K8o">K8o</td>
+                  <td class="freq-0" data-hand="Q8o">Q8o</td>
+                  <td class="freq-0" data-hand="J8o">J8o</td>
+                  <td class="freq-0" data-hand="T8o">T8o</td>
+                  <td class="freq-0" data-hand="98o">98o</td>
+                  <td class="freq-0 hand-pair" data-hand="88">88</td>
+                  <td class="freq-0 hand-suited" data-hand="87s">87s</td>
+                  <td class="freq-0 hand-suited" data-hand="86s">86s</td>
+                  <td class="freq-0 hand-suited" data-hand="85s">85s</td>
+                  <td class="freq-0 hand-suited" data-hand="84s">84s</td>
+                  <td class="freq-0 hand-suited" data-hand="83s">83s</td>
+                  <td class="freq-0 hand-suited" data-hand="82s">82s</td>
+                </tr>
+                <!-- Row 7 -->
+                <tr>
+                  <th>7</th>
+                  <td class="freq-0" data-hand="A7o">A7o</td>
+                  <td class="freq-0" data-hand="K7o">K7o</td>
+                  <td class="freq-0" data-hand="Q7o">Q7o</td>
+                  <td class="freq-0" data-hand="J7o">J7o</td>
+                  <td class="freq-0" data-hand="T7o">T7o</td>
+                  <td class="freq-0" data-hand="97o">97o</td>
+                  <td class="freq-0" data-hand="87o">87o</td>
+                  <td class="freq-0 hand-pair" data-hand="77">77</td>
+                  <td class="freq-0 hand-suited" data-hand="76s">76s</td>
+                  <td class="freq-0 hand-suited" data-hand="75s">75s</td>
+                  <td class="freq-0 hand-suited" data-hand="74s">74s</td>
+                  <td class="freq-0 hand-suited" data-hand="73s">73s</td>
+                  <td class="freq-0 hand-suited" data-hand="72s">72s</td>
+                </tr>
+                <!-- Row 6 -->
+                <tr>
+                  <th>6</th>
+                  <td class="freq-0" data-hand="A6o">A6o</td>
+                  <td class="freq-0" data-hand="K6o">K6o</td>
+                  <td class="freq-0" data-hand="Q6o">Q6o</td>
+                  <td class="freq-0" data-hand="J6o">J6o</td>
+                  <td class="freq-0" data-hand="T6o">T6o</td>
+                  <td class="freq-0" data-hand="96o">96o</td>
+                  <td class="freq-0" data-hand="86o">86o</td>
+                  <td class="freq-0" data-hand="76o">76o</td>
+                  <td class="freq-0 hand-pair" data-hand="66">66</td>
+                  <td class="freq-0 hand-suited" data-hand="65s">65s</td>
+                  <td class="freq-0 hand-suited" data-hand="64s">64s</td>
+                  <td class="freq-0 hand-suited" data-hand="63s">63s</td>
+                  <td class="freq-0 hand-suited" data-hand="62s">62s</td>
+                </tr>
+                <!-- Row 5 -->
+                <tr>
+                  <th>5</th>
+                  <td class="freq-0" data-hand="A5o">A5o</td>
+                  <td class="freq-0" data-hand="K5o">K5o</td>
+                  <td class="freq-0" data-hand="Q5o">Q5o</td>
+                  <td class="freq-0" data-hand="J5o">J5o</td>
+                  <td class="freq-0" data-hand="T5o">T5o</td>
+                  <td class="freq-0" data-hand="95o">95o</td>
+                  <td class="freq-0" data-hand="85o">85o</td>
+                  <td class="freq-0" data-hand="75o">75o</td>
+                  <td class="freq-0" data-hand="65o">65o</td>
+                  <td class="freq-0 hand-pair" data-hand="55">55</td>
+                  <td class="freq-0 hand-suited" data-hand="54s">54s</td>
+                  <td class="freq-0 hand-suited" data-hand="53s">53s</td>
+                  <td class="freq-0 hand-suited" data-hand="52s">52s</td>
+                </tr>
+                <!-- Row 4 -->
+                <tr>
+                  <th>4</th>
+                  <td class="freq-0" data-hand="A4o">A4o</td>
+                  <td class="freq-0" data-hand="K4o">K4o</td>
+                  <td class="freq-0" data-hand="Q4o">Q4o</td>
+                  <td class="freq-0" data-hand="J4o">J4o</td>
+                  <td class="freq-0" data-hand="T4o">T4o</td>
+                  <td class="freq-0" data-hand="94o">94o</td>
+                  <td class="freq-0" data-hand="84o">84o</td>
+                  <td class="freq-0" data-hand="74o">74o</td>
+                  <td class="freq-0" data-hand="64o">64o</td>
+                  <td class="freq-0" data-hand="54o">54o</td>
+                  <td class="freq-0 hand-pair" data-hand="44">44</td>
+                  <td class="freq-0 hand-suited" data-hand="43s">43s</td>
+                  <td class="freq-0 hand-suited" data-hand="42s">42s</td>
+                </tr>
+                <!-- Row 3 -->
+                <tr>
+                  <th>3</th>
+                  <td class="freq-0" data-hand="A3o">A3o</td>
+                  <td class="freq-0" data-hand="K3o">K3o</td>
+                  <td class="freq-0" data-hand="Q3o">Q3o</td>
+                  <td class="freq-0" data-hand="J3o">J3o</td>
+                  <td class="freq-0" data-hand="T3o">T3o</td>
+                  <td class="freq-0" data-hand="93o">93o</td>
+                  <td class="freq-0" data-hand="83o">83o</td>
+                  <td class="freq-0" data-hand="73o">73o</td>
+                  <td class="freq-0" data-hand="63o">63o</td>
+                  <td class="freq-0" data-hand="53o">53o</td>
+                  <td class="freq-0" data-hand="43o">43o</td>
+                  <td class="freq-0 hand-pair" data-hand="33">33</td>
+                  <td class="freq-0 hand-suited" data-hand="32s">32s</td>
+                </tr>
+                <!-- Row 2 -->
+                <tr>
+                  <th>2</th>
+                  <td class="freq-0" data-hand="A2o">A2o</td>
+                  <td class="freq-0" data-hand="K2o">K2o</td>
+                  <td class="freq-0" data-hand="Q2o">Q2o</td>
+                  <td class="freq-0" data-hand="J2o">J2o</td>
+                  <td class="freq-0" data-hand="T2o">T2o</td>
+                  <td class="freq-0" data-hand="92o">92o</td>
+                  <td class="freq-0" data-hand="82o">82o</td>
+                  <td class="freq-0" data-hand="72o">72o</td>
+                  <td class="freq-0" data-hand="62o">62o</td>
+                  <td class="freq-0" data-hand="52o">52o</td>
+                  <td class="freq-0" data-hand="42o">42o</td>
+                  <td class="freq-0" data-hand="32o">32o</td>
+                  <td class="freq-0 hand-pair" data-hand="22">22</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="matrix-legend" id="explore-legend-preflop">
+            <div class="legend-item"><div class="legend-swatch" style="background:rgba(74,246,195,0.5)"></div>Raise</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgba(0,104,255,0.5)"></div>Call</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(to right, rgba(74,246,195,0.5) 50%, rgba(0,104,255,0.5) 50%)"></div>Mixed</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#1a1a1a"></div>Fold</div>
+          </div>
+          <div class="matrix-legend hidden" id="explore-legend-postflop">
+            <div class="legend-item"><div class="legend-swatch" style="background:rgba(74,246,195,0.5)"></div>Bet/Raise</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgba(0,104,255,0.5)"></div>Check/Call</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(to right, rgba(74,246,195,0.5) 50%, rgba(0,104,255,0.5) 50%)"></div>Mixed</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#1a1a1a"></div>Not in range</div>
+          </div>
+          <div class="range-summary-bar" id="explore-summary-bar"></div>
+        </div>
+        </div><!-- /explore-matrix-section -->
+
+        <!-- Hand Details Section -->
+        <div class="explore-detail-section">
+          <div class="panel-header">HAND DETAILS</div>
+          <div class="panel-body" style="padding: 16px;">
+            <!-- Empty state -->
+            <div id="explore-hand-empty" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding: 16px;">
+              <div style="font-size: 28px; color: var(--text-dim); margin-bottom: 8px;">&#9830;</div>
+              <div style="color: var(--text-secondary); font-size: 11px; line-height: 1.6;">Click any cell in the matrix to view hand frequencies</div>
+            </div>
+            <!-- Hand detail (hidden until a hand is clicked) -->
+            <div id="explore-hand-info" class="hidden">
+              <div style="display:flex; align-items:center; gap:16px; margin-bottom: 12px;">
+                <span id="explore-selected-hand" style="font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: 0.05em;">&mdash;</span>
+                <div style="font-size: 10px; color: var(--text-dim);">
+                  <span id="explore-hand-type">--</span> &middot; <span id="explore-hand-combos">--</span> combos
+                </div>
+              </div>
+              <div style="display:flex; gap: 16px;">
+                <div class="freq-bar-item" style="flex:1;">
+                  <span class="freq-bar-label" id="explore-freq-fold-label">FOLD</span>
+                  <div class="freq-bar-track"><div class="freq-bar-fill fill-fold" id="explore-freq-fold" style="width:0%"></div></div>
+                  <span class="freq-bar-value" id="explore-freq-fold-val">&mdash;</span>
+                </div>
+                <div class="freq-bar-item" style="flex:1;">
+                  <span class="freq-bar-label" id="explore-freq-call-label">CALL</span>
+                  <div class="freq-bar-track"><div class="freq-bar-fill fill-call" id="explore-freq-call" style="width:0%"></div></div>
+                  <span class="freq-bar-value" id="explore-freq-call-val">&mdash;</span>
+                </div>
+                <div class="freq-bar-item" style="flex:1;">
+                  <span class="freq-bar-label" id="explore-freq-raise-label">RAISE</span>
+                  <div class="freq-bar-track"><div class="freq-bar-fill fill-raise" id="explore-freq-raise" style="width:0%"></div></div>
+                  <span class="freq-bar-value" id="explore-freq-raise-val">&mdash;</span>
+                </div>
+              </div>
+              <div id="explore-combo-grid" class="combo-grid" style="margin-top:12px;"></div>
+              <button class="btn btn-xs btn-dim mt-2" id="explore-view-postflop" style="display:none; width: 100%; margin-top: 12px; font-size: 9px; letter-spacing: 0.1em;">VIEW POSTFLOP &#187;</button>
+            </div>
+          </div>
+        </div><!-- /explore-detail-section -->
+
+        <!-- Solver Results Section (hidden until solver mode) -->
+        <div id="explore-solver-results" class="hidden" style="display:none;">
+          <div class="panel-header">SOLVER RESULTS <span class="panel-tag" id="solver-results-label">--</span></div>
+          <div class="panel-body" style="padding: 16px; overflow-y: auto;">
+            <!-- Empty state before solve -->
+            <div id="solver-empty" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding: 40px 16px;">
+              <div style="font-size: 28px; color: var(--text-dim); margin-bottom: 8px;">&#x1f9ee;</div>
+              <div style="color: var(--text-secondary); font-size: 12px; font-weight: 600; margin-bottom: 4px;">Postflop Explorer</div>
+              <div style="color: var(--text-dim); font-size: 11px; line-height: 1.6;">Select a matchup, texture, and board<br>to view GTO strategies.</div>
+            </div>
+            <!-- Solver output (hidden until solve completes) -->
+            <div id="solver-output" class="hidden">
+              <!-- Board display -->
+              <div id="solver-board-display" style="display:flex; gap: 6px; margin-bottom: 16px; justify-content: center;"></div>
+              <!-- Action buttons row -->
+              <div id="solver-actions" style="display:flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center;"></div>
+              <!-- Strategy breakdown -->
+              <div id="solver-strategy" style="margin-bottom: 16px;">
+                <div style="font-size: 10px; font-weight: 600; color: var(--text-dim); letter-spacing: 0.1em; margin-bottom: 8px;">STRATEGY — <span id="solver-player-label">OOP</span></div>
+                <div id="solver-strategy-bars"></div>
+              </div>
+              <!-- Hand-by-hand strategy table -->
+              <div id="solver-hand-table-wrap" style="max-height: 400px; overflow-y: auto;">
+                <table class="solver-hand-table" id="solver-hand-table">
+                  <thead>
+                    <tr>
+                      <th>Hand</th>
+                      <th>Weight</th>
+                      <th>Equity</th>
+                      <th>EV</th>
+                      <th>Strategy</th>
+                    </tr>
+                  </thead>
+                  <tbody id="solver-hand-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div><!-- /explore-solver-results -->
+      </div><!-- /explore-right-column -->
+    </div>
+
+
+    <!-- ────────── VIEW 2: DRILL ────────── -->
+    <div id="view-drill" class="view" style="grid-template-columns: 35% 65%;">
+
+      <!-- LEFT: Scenario Panel -->
+      <div class="panel" id="drill-scenario" style="display:flex; flex-direction:column; overflow:hidden;">
+        <div class="panel-header">
+          DRILL
+          <span class="panel-tag" id="drill-type-tag">PREFLOP</span>
+        </div>
+        <!-- Live progress bar -->
+        <div id="drill-progress-bar" class="hidden" style="padding:8px 12px; border-bottom:1px solid var(--border-dim); background:var(--bg-panel-header);">
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-dim); margin-bottom:3px;">
+            <span>PROGRESS</span>
+            <span id="drill-progress-text">0/50</span>
+          </div>
+          <div class="progress-bar" style="height:6px;">
+            <div class="progress-fill" id="drill-progress-fill" style="width:0%; transition:width 0.4s ease;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; margin-top:4px;">
+            <span style="color:var(--green);" id="drill-accuracy-live">0%</span>
+            <span style="color:var(--red);" id="drill-ev-loss-live">0.00 bb</span>
+          </div>
+        </div>
+        <div class="panel-body" style="flex:1; display:flex; flex-direction:column; overflow-y:auto;">
+          <!-- Drill type selector -->
+          <div class="config-row" style="margin-bottom: 12px;">
+            <div class="toggle-group" id="drill-type-selector">
+              <div class="toggle-option active" data-value="preflop">Preflop</div>
+              <div class="toggle-option" data-value="postflop">Postflop</div>
+              <div class="toggle-option" data-value="pushfold">Push/Fold</div>
+            </div>
+          </div>
+
+          <!-- PREFLOP CONFIG -->
+          <div id="preflop-config" class="drill-config">
+            <div class="config-row">
+              <label class="form-label">Format</label>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="toggle-group" id="preflop-format-toggle">
+                  <div class="toggle-option active" data-value="cash">CASH</div>
+                  <div class="toggle-option" data-value="mtt">MTT</div>
+                </div>
+                <div class="icm-toggle hidden" id="preflop-icm-toggle">
+                  <label class="toggle-switch" title="ICM adjustments">
+                    <input type="checkbox" id="preflop-icm-check" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span style="font-size: 10px; color: var(--text-dim);">ICM</span>
+                </div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Stack</label>
+              <div class="checkbox-group" id="preflop-stack-chips">
+                <div class="checkbox-chip checked" data-value="10bb">10bb</div>
+                <div class="checkbox-chip checked" data-value="15bb">15bb</div>
+                <div class="checkbox-chip checked" data-value="20bb">20bb</div>
+                <div class="checkbox-chip checked" data-value="25bb">25bb</div>
+                <div class="checkbox-chip checked" data-value="40bb">40bb</div>
+                <div class="checkbox-chip checked" data-value="60bb">60bb</div>
+                <div class="checkbox-chip checked" data-value="100bb">100bb</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Position</label>
+              <div class="checkbox-group" id="preflop-position-chips">
+                <div class="checkbox-chip checked" data-value="UTG">UTG</div>
+                <div class="checkbox-chip checked" data-value="MP">MP</div>
+                <div class="checkbox-chip checked" data-value="CO">CO</div>
+                <div class="checkbox-chip checked" data-value="BTN">BTN</div>
+                <div class="checkbox-chip checked" data-value="SB">SB</div>
+                <div class="checkbox-chip checked" data-value="BB">BB</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Action</label>
+              <div class="checkbox-group" id="preflop-action-chips">
+                <div class="checkbox-chip checked" data-value="rfi">RFI</div>
+                <div class="checkbox-chip checked" data-value="vs_raise">vs Raise</div>
+                <div class="checkbox-chip" data-value="vs_3bet">vs 3bet</div>
+                <div class="checkbox-chip" data-value="vs_4bet">vs 4bet</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Drills</label>
+              <div class="toggle-group" id="preflop-drill-count">
+                <div class="toggle-option active" data-value="20">20</div>
+                <div class="toggle-option" data-value="50">50</div>
+                <div class="toggle-option" data-value="100">100</div>
+                <div class="toggle-option" data-value="0">Unlimited</div>
+              </div>
+            </div>
+            <button class="btn btn-primary w-full mt-3" id="btn-start-preflop">START DRILL</button>
+          </div>
+
+          <!-- PREFLOP ACTIVE -->
+          <div id="preflop-active" class="hidden">
+            <div class="table-display" id="table-display">
+              <div class="table-oval"></div>
+              <div class="seat seat-utg" data-position="UTG">UTG</div>
+              <div class="seat seat-mp" data-position="MP">MP</div>
+              <div class="seat seat-co" data-position="CO">CO</div>
+              <div class="seat seat-btn" data-position="BTN">BTN</div>
+              <div class="seat seat-sb" data-position="SB">SB</div>
+              <div class="seat seat-bb" data-position="BB">BB</div>
+            </div>
+
+            <div id="hero-cards" class="card-container" style="justify-content: center; margin: 12px 0;">
+              <div class="playing-card card-facedown"><span class="card-rank"></span><span class="card-suit"></span></div>
+              <div class="playing-card card-facedown"><span class="card-rank"></span><span class="card-suit"></span></div>
+            </div>
+
+            <div class="mt-3">
+              <div class="stat-row">
+                <span class="stat-label">Position</span>
+                <span class="stat-value" id="stat-position">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Stack</span>
+                <span class="stat-value" id="stat-stack">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Villain</span>
+                <span class="stat-value" id="stat-villain">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Action To You</span>
+                <span class="stat-value" id="stat-action">--</span>
+              </div>
+            </div>
+
+            <div class="action-buttons mt-3" id="preflop-actions">
+              <button class="action-btn btn-fold" data-action="fold">
+                <span class="key-hint">F</span> <span class="action-label">Fold</span>
+              </button>
+              <button class="action-btn btn-call" data-action="call">
+                <span class="key-hint">C</span> <span class="action-label">Call</span>
+              </button>
+              <button class="action-btn btn-raise" data-action="raise">
+                <span class="key-hint">R</span> <span class="action-label">Raise</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- POSTFLOP CONFIG -->
+          <div id="postflop-config" class="drill-config hidden">
+            <div class="config-row">
+              <label class="form-label">Format</label>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="toggle-group" id="postflop-format-toggle">
+                  <div class="toggle-option active" data-value="cash">CASH</div>
+                  <div class="toggle-option" data-value="mtt">MTT</div>
+                </div>
+                <div class="icm-toggle hidden" id="postflop-icm-toggle">
+                  <label class="toggle-switch" title="ICM adjustments">
+                    <input type="checkbox" id="postflop-icm-check" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span style="font-size: 10px; color: var(--text-dim);">ICM</span>
+                </div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Stack</label>
+              <div class="checkbox-group" id="postflop-stack-chips">
+                <div class="checkbox-chip checked" data-value="30">30bb</div>
+                <div class="checkbox-chip checked" data-value="40">40bb</div>
+                <div class="checkbox-chip checked" data-value="60">60bb</div>
+                <div class="checkbox-chip checked" data-value="100">100bb+</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Spot</label>
+              <div class="checkbox-group" id="postflop-spot-chips">
+                <div class="checkbox-chip checked" data-value="IP_cbet_flop">C-bet IP</div>
+                <div class="checkbox-chip checked" data-value="OOP_cbet_flop">C-bet OOP</div>
+                <div class="checkbox-chip checked" data-value="IP_facing_cbet">Facing C-bet IP</div>
+                <div class="checkbox-chip checked" data-value="OOP_facing_cbet">Facing C-bet OOP</div>
+                <div class="checkbox-chip" data-value="IP_turn_barrel">Turn Barrel</div>
+                <div class="checkbox-chip" data-value="IP_river_bet">River Decision</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Matchup</label>
+              <div class="checkbox-group" id="postflop-matchup-chips">
+                <div class="checkbox-chip checked" data-value="SB_vs_BB">SB vs BB</div>
+                <div class="checkbox-chip checked" data-value="BTN_vs_BB">BTN vs BB</div>
+                <div class="checkbox-chip checked" data-value="CO_vs_BB">CO vs BB</div>
+                <div class="checkbox-chip checked" data-value="UTG_vs_BB">UTG vs BB</div>
+                <div class="checkbox-chip checked" data-value="BTN_vs_SB">BTN vs SB</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Depth</label>
+              <div class="checkbox-group" id="postflop-depth-chips">
+                <div class="checkbox-chip checked" data-value="100bb">100bb</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Drills</label>
+              <div class="toggle-group" id="postflop-drill-count">
+                <div class="toggle-option active" data-value="20">20</div>
+                <div class="toggle-option" data-value="50">50</div>
+                <div class="toggle-option" data-value="100">100</div>
+                <div class="toggle-option" data-value="0">Unlimited</div>
+              </div>
+            </div>
+            <button class="btn btn-primary w-full mt-3" id="btn-start-postflop">START DRILL</button>
+          </div>
+
+          <!-- POSTFLOP ACTIVE -->
+          <div id="postflop-active" class="hidden">
+            <div id="postflop-hero-cards" class="card-container" style="justify-content: center; margin: 8px 0;">
+              <div class="playing-card card-facedown"><span class="card-rank"></span><span class="card-suit"></span></div>
+              <div class="playing-card card-facedown"><span class="card-rank"></span><span class="card-suit"></span></div>
+            </div>
+
+            <div id="postflop-board-cards">
+              <!-- Board cards rendered dynamically by GTO.UI.BoardDisplay.renderBoard -->
+            </div>
+
+            <div class="mt-2">
+              <div class="stat-row">
+                <span class="stat-label">Pot</span>
+                <span class="stat-value" id="postflop-pot">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Stack</span>
+                <span class="stat-value" id="postflop-stack">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Position</span>
+                <span class="stat-value" id="postflop-position">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Street</span>
+                <span class="stat-value" id="postflop-street">--</span>
+              </div>
+            </div>
+
+            <!-- Dynamic action buttons (rendered by app.js based on solver/heuristic) -->
+            <div class="action-buttons mt-3" id="postflop-dynamic-actions">
+              <!-- Populated dynamically by _renderPostflopActions() -->
+            </div>
+          </div>
+
+          <!-- PUSH/FOLD CONFIG (from MTT) -->
+          <div id="mtt-config" class="drill-config hidden">
+            <div class="config-row">
+              <label class="form-label">Structure</label>
+              <div class="toggle-group" id="mtt-structure-toggle">
+                <div class="toggle-option active" data-value="9max_sng">9-Max SNG</div>
+                <div class="toggle-option" data-value="6max_sng">6-Max SNG</div>
+                <div class="toggle-option" data-value="mtt_ft">MTT FT</div>
+                <div class="toggle-option" data-value="satellite">Satellite</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Stack</label>
+              <div class="checkbox-group" id="mtt-stack-chips">
+                <div class="checkbox-chip checked" data-value="5">5bb</div>
+                <div class="checkbox-chip checked" data-value="8">8bb</div>
+                <div class="checkbox-chip checked" data-value="10">10bb</div>
+                <div class="checkbox-chip checked" data-value="12">12bb</div>
+                <div class="checkbox-chip checked" data-value="15">15bb</div>
+                <div class="checkbox-chip" data-value="20">20bb</div>
+                <div class="checkbox-chip" data-value="25">25bb</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Table</label>
+              <div class="toggle-group" id="mtt-table-size">
+                <div class="toggle-option" data-value="6">6-max</div>
+                <div class="toggle-option active" data-value="9">9-max</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Position</label>
+              <div class="checkbox-group" id="mtt-position-chips">
+                <div class="checkbox-chip checked" data-value="UTG">UTG</div>
+                <div class="checkbox-chip checked" data-value="MP">MP</div>
+                <div class="checkbox-chip checked" data-value="CO">CO</div>
+                <div class="checkbox-chip checked" data-value="BTN">BTN</div>
+                <div class="checkbox-chip checked" data-value="SB">SB</div>
+                <div class="checkbox-chip checked" data-value="BB">BB</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Stage</label>
+              <div class="toggle-group" id="mtt-stage-toggle">
+                <div class="toggle-option active" data-value="normal">Normal</div>
+                <div class="toggle-option" data-value="bubble">Bubble</div>
+                <div class="toggle-option" data-value="ft">Final Table</div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Drills</label>
+              <div class="toggle-group" id="mtt-drill-count">
+                <div class="toggle-option active" data-value="20">20</div>
+                <div class="toggle-option" data-value="50">50</div>
+                <div class="toggle-option" data-value="100">100</div>
+                <div class="toggle-option" data-value="0">Unlimited</div>
+              </div>
+            </div>
+            <button class="btn btn-primary w-full mt-3" id="btn-start-mtt">START DRILL</button>
+          </div>
+
+          <!-- PUSH/FOLD ACTIVE (from MTT) -->
+          <div id="mtt-active" class="hidden">
+            <div class="table-display">
+              <div class="table-oval"></div>
+              <div class="seat seat-utg">UTG</div>
+              <div class="seat seat-mp">MP</div>
+              <div class="seat seat-co">CO</div>
+              <div class="seat seat-btn">BTN</div>
+              <div class="seat seat-sb">SB</div>
+              <div class="seat seat-bb">BB</div>
+            </div>
+
+            <div id="mtt-hero-cards" class="card-container" style="justify-content: center; margin: 12px 0;">
+              <div class="playing-card card-facedown"><span class="card-rank"></span><span class="card-suit"></span></div>
+              <div class="playing-card card-facedown"><span class="card-rank"></span><span class="card-suit"></span></div>
+            </div>
+
+            <div class="mt-2">
+              <div class="stat-row">
+                <span class="stat-label">Position</span>
+                <span class="stat-value" id="mtt-position">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Stack</span>
+                <span class="stat-value" id="mtt-stack">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Blinds</span>
+                <span class="stat-value" id="mtt-blinds">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Ante</span>
+                <span class="stat-value" id="mtt-ante">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Players Left</span>
+                <span class="stat-value" id="mtt-players">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Payouts</span>
+                <span class="stat-value" id="mtt-payouts">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">ICM Pressure</span>
+                <span class="stat-value" id="mtt-pressure-badge">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Bubble Factor</span>
+                <span class="stat-value" id="mtt-bf-badge">--</span>
+              </div>
+            </div>
+
+            <!-- Table stacks mini display -->
+            <div id="mtt-table-stacks" class="mt-2 hidden" style="font-size: 11px; color: var(--text-dim);">
+              <div class="section-header" style="font-size: 10px;">TABLE STACKS</div>
+              <div id="mtt-stacks-list" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+            </div>
+
+            <!-- Short stack: Push/Fold -->
+            <div class="action-buttons mt-3" id="mtt-actions-pushfold">
+              <button class="action-btn btn-fold" data-action="fold">
+                <span class="key-hint">F</span> Fold
+              </button>
+              <button class="action-btn btn-raise" data-action="push">
+                <span class="key-hint">P</span> Push
+              </button>
+            </div>
+
+            <!-- Deeper: Fold/Call/Raise -->
+            <div class="action-buttons mt-3 hidden" id="mtt-actions-deep">
+              <button class="action-btn btn-fold" data-action="fold">
+                <span class="key-hint">F</span> Fold
+              </button>
+              <button class="action-btn btn-call" data-action="call">
+                <span class="key-hint">C</span> Call
+              </button>
+              <button class="action-btn btn-raise" data-action="raise">
+                <span class="key-hint">R</span> Raise
+              </button>
+            </div>
+          </div>
+
+          <!-- NEXT HAND bar — shared across all drill types -->
+          <div id="drill-next-bar" class="hidden" style="margin-top:auto; padding:12px 0 0 0; border-top:1px solid var(--border-dim);">
+            <button class="btn btn-primary" id="btn-drill-next" style="width:100%; padding:10px; font-size:13px; font-weight:700; letter-spacing:0.08em;">
+              NEXT HAND <span class="key-hint" style="opacity:0.6; font-size:10px; margin-left:6px;">SPACE / N</span>
+            </button>
+          </div>
+
+          <!-- SESSION SUMMARY -->
+          <div id="drill-session-summary" class="hidden">
+            <div class="panel-header-mini">SESSION COMPLETE</div>
+            <div class="session-summary-stats" style="margin: 12px 0;">
+              <div class="stat-row"><span class="stat-label">HANDS</span><span class="stat-value" id="summary-total">0</span></div>
+              <div class="stat-row"><span class="stat-label">ACCURACY</span><span class="stat-value" id="summary-accuracy">0%</span></div>
+              <div class="stat-row"><span class="stat-label">EV LOSS</span><span class="stat-value" id="summary-ev-loss">0.00</span></div>
+              <div class="stat-row"><span class="stat-label">TIME</span><span class="stat-value" id="summary-time">0:00</span></div>
+            </div>
+            <div style="max-height: 300px; overflow-y: auto;">
+              <table class="data-table" id="summary-decisions-table">
+                <thead>
+                  <tr><th>#</th><th>Hand</th><th>Pos</th><th>You</th><th>GTO</th><th>Verdict</th></tr>
+                </thead>
+                <tbody id="summary-decisions-body"></tbody>
+              </table>
+            </div>
+            <div class="action-buttons" style="margin-top: 12px;">
+              <button class="btn btn-primary" id="btn-drill-again">DRILL AGAIN</button>
+              <button class="btn btn-secondary" id="btn-back-config">BACK TO CONFIG</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Matrix + Feedback Column -->
+      <div class="panel drill-right-column">
+        <div class="drill-matrix-section" id="drill-center">
+        <div class="panel-header">
+          RANGE MATRIX
+          <span class="panel-tag" id="drill-center-tag"></span>
+        </div>
+        <div class="panel-body">
+          <!-- Preflop matrix -->
+          <div id="drill-matrix-area">
+            <div class="hand-matrix-container">
+              <table class="hand-matrix" id="hand-matrix-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>A</th><th>K</th><th>Q</th><th>J</th><th>T</th><th>9</th><th>8</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th>A</th><td class="freq-0 hand-pair" data-hand="AA">AA</td><td class="freq-0 hand-suited" data-hand="AKs">AKs</td><td class="freq-0 hand-suited" data-hand="AQs">AQs</td><td class="freq-0 hand-suited" data-hand="AJs">AJs</td><td class="freq-0 hand-suited" data-hand="ATs">ATs</td><td class="freq-0 hand-suited" data-hand="A9s">A9s</td><td class="freq-0 hand-suited" data-hand="A8s">A8s</td><td class="freq-0 hand-suited" data-hand="A7s">A7s</td><td class="freq-0 hand-suited" data-hand="A6s">A6s</td><td class="freq-0 hand-suited" data-hand="A5s">A5s</td><td class="freq-0 hand-suited" data-hand="A4s">A4s</td><td class="freq-0 hand-suited" data-hand="A3s">A3s</td><td class="freq-0 hand-suited" data-hand="A2s">A2s</td></tr>
+                  <tr><th>K</th><td class="freq-0" data-hand="AKo">AKo</td><td class="freq-0 hand-pair" data-hand="KK">KK</td><td class="freq-0 hand-suited" data-hand="KQs">KQs</td><td class="freq-0 hand-suited" data-hand="KJs">KJs</td><td class="freq-0 hand-suited" data-hand="KTs">KTs</td><td class="freq-0 hand-suited" data-hand="K9s">K9s</td><td class="freq-0 hand-suited" data-hand="K8s">K8s</td><td class="freq-0 hand-suited" data-hand="K7s">K7s</td><td class="freq-0 hand-suited" data-hand="K6s">K6s</td><td class="freq-0 hand-suited" data-hand="K5s">K5s</td><td class="freq-0 hand-suited" data-hand="K4s">K4s</td><td class="freq-0 hand-suited" data-hand="K3s">K3s</td><td class="freq-0 hand-suited" data-hand="K2s">K2s</td></tr>
+                  <tr><th>Q</th><td class="freq-0" data-hand="AQo">AQo</td><td class="freq-0" data-hand="KQo">KQo</td><td class="freq-0 hand-pair" data-hand="QQ">QQ</td><td class="freq-0 hand-suited" data-hand="QJs">QJs</td><td class="freq-0 hand-suited" data-hand="QTs">QTs</td><td class="freq-0 hand-suited" data-hand="Q9s">Q9s</td><td class="freq-0 hand-suited" data-hand="Q8s">Q8s</td><td class="freq-0 hand-suited" data-hand="Q7s">Q7s</td><td class="freq-0 hand-suited" data-hand="Q6s">Q6s</td><td class="freq-0 hand-suited" data-hand="Q5s">Q5s</td><td class="freq-0 hand-suited" data-hand="Q4s">Q4s</td><td class="freq-0 hand-suited" data-hand="Q3s">Q3s</td><td class="freq-0 hand-suited" data-hand="Q2s">Q2s</td></tr>
+                  <tr><th>J</th><td class="freq-0" data-hand="AJo">AJo</td><td class="freq-0" data-hand="KJo">KJo</td><td class="freq-0" data-hand="QJo">QJo</td><td class="freq-0 hand-pair" data-hand="JJ">JJ</td><td class="freq-0 hand-suited" data-hand="JTs">JTs</td><td class="freq-0 hand-suited" data-hand="J9s">J9s</td><td class="freq-0 hand-suited" data-hand="J8s">J8s</td><td class="freq-0 hand-suited" data-hand="J7s">J7s</td><td class="freq-0 hand-suited" data-hand="J6s">J6s</td><td class="freq-0 hand-suited" data-hand="J5s">J5s</td><td class="freq-0 hand-suited" data-hand="J4s">J4s</td><td class="freq-0 hand-suited" data-hand="J3s">J3s</td><td class="freq-0 hand-suited" data-hand="J2s">J2s</td></tr>
+                  <tr><th>T</th><td class="freq-0" data-hand="ATo">ATo</td><td class="freq-0" data-hand="KTo">KTo</td><td class="freq-0" data-hand="QTo">QTo</td><td class="freq-0" data-hand="JTo">JTo</td><td class="freq-0 hand-pair" data-hand="TT">TT</td><td class="freq-0 hand-suited" data-hand="T9s">T9s</td><td class="freq-0 hand-suited" data-hand="T8s">T8s</td><td class="freq-0 hand-suited" data-hand="T7s">T7s</td><td class="freq-0 hand-suited" data-hand="T6s">T6s</td><td class="freq-0 hand-suited" data-hand="T5s">T5s</td><td class="freq-0 hand-suited" data-hand="T4s">T4s</td><td class="freq-0 hand-suited" data-hand="T3s">T3s</td><td class="freq-0 hand-suited" data-hand="T2s">T2s</td></tr>
+                  <tr><th>9</th><td class="freq-0" data-hand="A9o">A9o</td><td class="freq-0" data-hand="K9o">K9o</td><td class="freq-0" data-hand="Q9o">Q9o</td><td class="freq-0" data-hand="J9o">J9o</td><td class="freq-0" data-hand="T9o">T9o</td><td class="freq-0 hand-pair" data-hand="99">99</td><td class="freq-0 hand-suited" data-hand="98s">98s</td><td class="freq-0 hand-suited" data-hand="97s">97s</td><td class="freq-0 hand-suited" data-hand="96s">96s</td><td class="freq-0 hand-suited" data-hand="95s">95s</td><td class="freq-0 hand-suited" data-hand="94s">94s</td><td class="freq-0 hand-suited" data-hand="93s">93s</td><td class="freq-0 hand-suited" data-hand="92s">92s</td></tr>
+                  <tr><th>8</th><td class="freq-0" data-hand="A8o">A8o</td><td class="freq-0" data-hand="K8o">K8o</td><td class="freq-0" data-hand="Q8o">Q8o</td><td class="freq-0" data-hand="J8o">J8o</td><td class="freq-0" data-hand="T8o">T8o</td><td class="freq-0" data-hand="98o">98o</td><td class="freq-0 hand-pair" data-hand="88">88</td><td class="freq-0 hand-suited" data-hand="87s">87s</td><td class="freq-0 hand-suited" data-hand="86s">86s</td><td class="freq-0 hand-suited" data-hand="85s">85s</td><td class="freq-0 hand-suited" data-hand="84s">84s</td><td class="freq-0 hand-suited" data-hand="83s">83s</td><td class="freq-0 hand-suited" data-hand="82s">82s</td></tr>
+                  <tr><th>7</th><td class="freq-0" data-hand="A7o">A7o</td><td class="freq-0" data-hand="K7o">K7o</td><td class="freq-0" data-hand="Q7o">Q7o</td><td class="freq-0" data-hand="J7o">J7o</td><td class="freq-0" data-hand="T7o">T7o</td><td class="freq-0" data-hand="97o">97o</td><td class="freq-0" data-hand="87o">87o</td><td class="freq-0 hand-pair" data-hand="77">77</td><td class="freq-0 hand-suited" data-hand="76s">76s</td><td class="freq-0 hand-suited" data-hand="75s">75s</td><td class="freq-0 hand-suited" data-hand="74s">74s</td><td class="freq-0 hand-suited" data-hand="73s">73s</td><td class="freq-0 hand-suited" data-hand="72s">72s</td></tr>
+                  <tr><th>6</th><td class="freq-0" data-hand="A6o">A6o</td><td class="freq-0" data-hand="K6o">K6o</td><td class="freq-0" data-hand="Q6o">Q6o</td><td class="freq-0" data-hand="J6o">J6o</td><td class="freq-0" data-hand="T6o">T6o</td><td class="freq-0" data-hand="96o">96o</td><td class="freq-0" data-hand="86o">86o</td><td class="freq-0" data-hand="76o">76o</td><td class="freq-0 hand-pair" data-hand="66">66</td><td class="freq-0 hand-suited" data-hand="65s">65s</td><td class="freq-0 hand-suited" data-hand="64s">64s</td><td class="freq-0 hand-suited" data-hand="63s">63s</td><td class="freq-0 hand-suited" data-hand="62s">62s</td></tr>
+                  <tr><th>5</th><td class="freq-0" data-hand="A5o">A5o</td><td class="freq-0" data-hand="K5o">K5o</td><td class="freq-0" data-hand="Q5o">Q5o</td><td class="freq-0" data-hand="J5o">J5o</td><td class="freq-0" data-hand="T5o">T5o</td><td class="freq-0" data-hand="95o">95o</td><td class="freq-0" data-hand="85o">85o</td><td class="freq-0" data-hand="75o">75o</td><td class="freq-0" data-hand="65o">65o</td><td class="freq-0 hand-pair" data-hand="55">55</td><td class="freq-0 hand-suited" data-hand="54s">54s</td><td class="freq-0 hand-suited" data-hand="53s">53s</td><td class="freq-0 hand-suited" data-hand="52s">52s</td></tr>
+                  <tr><th>4</th><td class="freq-0" data-hand="A4o">A4o</td><td class="freq-0" data-hand="K4o">K4o</td><td class="freq-0" data-hand="Q4o">Q4o</td><td class="freq-0" data-hand="J4o">J4o</td><td class="freq-0" data-hand="T4o">T4o</td><td class="freq-0" data-hand="94o">94o</td><td class="freq-0" data-hand="84o">84o</td><td class="freq-0" data-hand="74o">74o</td><td class="freq-0" data-hand="64o">64o</td><td class="freq-0" data-hand="54o">54o</td><td class="freq-0 hand-pair" data-hand="44">44</td><td class="freq-0 hand-suited" data-hand="43s">43s</td><td class="freq-0 hand-suited" data-hand="42s">42s</td></tr>
+                  <tr><th>3</th><td class="freq-0" data-hand="A3o">A3o</td><td class="freq-0" data-hand="K3o">K3o</td><td class="freq-0" data-hand="Q3o">Q3o</td><td class="freq-0" data-hand="J3o">J3o</td><td class="freq-0" data-hand="T3o">T3o</td><td class="freq-0" data-hand="93o">93o</td><td class="freq-0" data-hand="83o">83o</td><td class="freq-0" data-hand="73o">73o</td><td class="freq-0" data-hand="63o">63o</td><td class="freq-0" data-hand="53o">53o</td><td class="freq-0" data-hand="43o">43o</td><td class="freq-0 hand-pair" data-hand="33">33</td><td class="freq-0 hand-suited" data-hand="32s">32s</td></tr>
+                  <tr><th>2</th><td class="freq-0" data-hand="A2o">A2o</td><td class="freq-0" data-hand="K2o">K2o</td><td class="freq-0" data-hand="Q2o">Q2o</td><td class="freq-0" data-hand="J2o">J2o</td><td class="freq-0" data-hand="T2o">T2o</td><td class="freq-0" data-hand="92o">92o</td><td class="freq-0" data-hand="82o">82o</td><td class="freq-0" data-hand="72o">72o</td><td class="freq-0" data-hand="62o">62o</td><td class="freq-0" data-hand="52o">52o</td><td class="freq-0" data-hand="42o">42o</td><td class="freq-0" data-hand="32o">32o</td><td class="freq-0 hand-pair" data-hand="22">22</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="matrix-legend">
+              <div class="legend-item"><div class="legend-swatch" style="background:rgba(74,246,195,0.5)"></div>Raise</div>
+              <div class="legend-item"><div class="legend-swatch" style="background:rgba(0,104,255,0.5)"></div>Call</div>
+              <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(to right, rgba(74,246,195,0.5) 50%, rgba(0,104,255,0.5) 50%)"></div>Mixed</div>
+              <div class="legend-item"><div class="legend-swatch" style="background:#1a1a1a"></div>Fold</div>
+            </div>
+          </div>
+          <!-- Postflop board area -->
+          <div id="drill-board-area" class="hidden">
+            <div id="postflop-board-display">
+              <div id="board-display-cards">
+                <!-- Board cards rendered dynamically by GTO.UI.BoardDisplay.renderBoard -->
+              </div>
+              <div class="section-header mt-3">Texture Analysis</div>
+              <div class="mt-2">
+                <div class="stat-row"><span class="stat-label">Texture</span><span class="stat-value" id="texture-type">--</span></div>
+                <div class="stat-row"><span class="stat-label">Wetness</span><span class="stat-value" id="texture-wetness">--</span></div>
+                <div class="stat-row"><span class="stat-label">Connectivity</span><span class="stat-value" id="texture-connect">--</span></div>
+                <div class="stat-row"><span class="stat-label">Flush Draw</span><span class="stat-value" id="texture-flush">--</span></div>
+                <div class="stat-row"><span class="stat-label">High Card</span><span class="stat-value" id="texture-high">--</span></div>
+              </div>
+              <div class="section-header mt-3">Hand Strength</div>
+              <div class="stat-row"><span class="stat-label">Classification</span><span class="stat-value" id="postflop-hand-strength">--</span></div>
+              <div class="section-header mt-3">Range Advantage</div>
+              <div class="freq-bar-group mt-2">
+                <div class="freq-bar-item">
+                  <span class="freq-bar-label">IP</span>
+                  <div class="freq-bar-track"><div class="freq-bar-fill fill-raise" id="range-adv-ip" style="width: 50%;"></div></div>
+                  <span class="freq-bar-value" id="range-adv-ip-val">50%</span>
+                </div>
+                <div class="freq-bar-item">
+                  <span class="freq-bar-label">OOP</span>
+                  <div class="freq-bar-track"><div class="freq-bar-fill fill-call" id="range-adv-oop" style="width: 50%;"></div></div>
+                  <span class="freq-bar-value" id="range-adv-oop-val">50%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Push/fold matrix -->
+          <div id="drill-pushfold-matrix" class="hidden">
+            <div class="hand-matrix-container">
+              <table class="hand-matrix" id="mtt-matrix-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>A</th><th>K</th><th>Q</th><th>J</th><th>T</th><th>9</th><th>8</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><th>A</th><td class="freq-0 hand-pair" data-hand="AA">AA</td><td class="freq-0 hand-suited" data-hand="AKs">AKs</td><td class="freq-0 hand-suited" data-hand="AQs">AQs</td><td class="freq-0 hand-suited" data-hand="AJs">AJs</td><td class="freq-0 hand-suited" data-hand="ATs">ATs</td><td class="freq-0 hand-suited" data-hand="A9s">A9s</td><td class="freq-0 hand-suited" data-hand="A8s">A8s</td><td class="freq-0 hand-suited" data-hand="A7s">A7s</td><td class="freq-0 hand-suited" data-hand="A6s">A6s</td><td class="freq-0 hand-suited" data-hand="A5s">A5s</td><td class="freq-0 hand-suited" data-hand="A4s">A4s</td><td class="freq-0 hand-suited" data-hand="A3s">A3s</td><td class="freq-0 hand-suited" data-hand="A2s">A2s</td></tr>
+                  <tr><th>K</th><td class="freq-0" data-hand="AKo">AKo</td><td class="freq-0 hand-pair" data-hand="KK">KK</td><td class="freq-0 hand-suited" data-hand="KQs">KQs</td><td class="freq-0 hand-suited" data-hand="KJs">KJs</td><td class="freq-0 hand-suited" data-hand="KTs">KTs</td><td class="freq-0 hand-suited" data-hand="K9s">K9s</td><td class="freq-0 hand-suited" data-hand="K8s">K8s</td><td class="freq-0 hand-suited" data-hand="K7s">K7s</td><td class="freq-0 hand-suited" data-hand="K6s">K6s</td><td class="freq-0 hand-suited" data-hand="K5s">K5s</td><td class="freq-0 hand-suited" data-hand="K4s">K4s</td><td class="freq-0 hand-suited" data-hand="K3s">K3s</td><td class="freq-0 hand-suited" data-hand="K2s">K2s</td></tr>
+                  <tr><th>Q</th><td class="freq-0" data-hand="AQo">AQo</td><td class="freq-0" data-hand="KQo">KQo</td><td class="freq-0 hand-pair" data-hand="QQ">QQ</td><td class="freq-0 hand-suited" data-hand="QJs">QJs</td><td class="freq-0 hand-suited" data-hand="QTs">QTs</td><td class="freq-0 hand-suited" data-hand="Q9s">Q9s</td><td class="freq-0 hand-suited" data-hand="Q8s">Q8s</td><td class="freq-0 hand-suited" data-hand="Q7s">Q7s</td><td class="freq-0 hand-suited" data-hand="Q6s">Q6s</td><td class="freq-0 hand-suited" data-hand="Q5s">Q5s</td><td class="freq-0 hand-suited" data-hand="Q4s">Q4s</td><td class="freq-0 hand-suited" data-hand="Q3s">Q3s</td><td class="freq-0 hand-suited" data-hand="Q2s">Q2s</td></tr>
+                  <tr><th>J</th><td class="freq-0" data-hand="AJo">AJo</td><td class="freq-0" data-hand="KJo">KJo</td><td class="freq-0" data-hand="QJo">QJo</td><td class="freq-0 hand-pair" data-hand="JJ">JJ</td><td class="freq-0 hand-suited" data-hand="JTs">JTs</td><td class="freq-0 hand-suited" data-hand="J9s">J9s</td><td class="freq-0 hand-suited" data-hand="J8s">J8s</td><td class="freq-0 hand-suited" data-hand="J7s">J7s</td><td class="freq-0 hand-suited" data-hand="J6s">J6s</td><td class="freq-0 hand-suited" data-hand="J5s">J5s</td><td class="freq-0 hand-suited" data-hand="J4s">J4s</td><td class="freq-0 hand-suited" data-hand="J3s">J3s</td><td class="freq-0 hand-suited" data-hand="J2s">J2s</td></tr>
+                  <tr><th>T</th><td class="freq-0" data-hand="ATo">ATo</td><td class="freq-0" data-hand="KTo">KTo</td><td class="freq-0" data-hand="QTo">QTo</td><td class="freq-0" data-hand="JTo">JTo</td><td class="freq-0 hand-pair" data-hand="TT">TT</td><td class="freq-0 hand-suited" data-hand="T9s">T9s</td><td class="freq-0 hand-suited" data-hand="T8s">T8s</td><td class="freq-0 hand-suited" data-hand="T7s">T7s</td><td class="freq-0 hand-suited" data-hand="T6s">T6s</td><td class="freq-0 hand-suited" data-hand="T5s">T5s</td><td class="freq-0 hand-suited" data-hand="T4s">T4s</td><td class="freq-0 hand-suited" data-hand="T3s">T3s</td><td class="freq-0 hand-suited" data-hand="T2s">T2s</td></tr>
+                  <tr><th>9</th><td class="freq-0" data-hand="A9o">A9o</td><td class="freq-0" data-hand="K9o">K9o</td><td class="freq-0" data-hand="Q9o">Q9o</td><td class="freq-0" data-hand="J9o">J9o</td><td class="freq-0" data-hand="T9o">T9o</td><td class="freq-0 hand-pair" data-hand="99">99</td><td class="freq-0 hand-suited" data-hand="98s">98s</td><td class="freq-0 hand-suited" data-hand="97s">97s</td><td class="freq-0 hand-suited" data-hand="96s">96s</td><td class="freq-0 hand-suited" data-hand="95s">95s</td><td class="freq-0 hand-suited" data-hand="94s">94s</td><td class="freq-0 hand-suited" data-hand="93s">93s</td><td class="freq-0 hand-suited" data-hand="92s">92s</td></tr>
+                  <tr><th>8</th><td class="freq-0" data-hand="A8o">A8o</td><td class="freq-0" data-hand="K8o">K8o</td><td class="freq-0" data-hand="Q8o">Q8o</td><td class="freq-0" data-hand="J8o">J8o</td><td class="freq-0" data-hand="T8o">T8o</td><td class="freq-0" data-hand="98o">98o</td><td class="freq-0 hand-pair" data-hand="88">88</td><td class="freq-0 hand-suited" data-hand="87s">87s</td><td class="freq-0 hand-suited" data-hand="86s">86s</td><td class="freq-0 hand-suited" data-hand="85s">85s</td><td class="freq-0 hand-suited" data-hand="84s">84s</td><td class="freq-0 hand-suited" data-hand="83s">83s</td><td class="freq-0 hand-suited" data-hand="82s">82s</td></tr>
+                  <tr><th>7</th><td class="freq-0" data-hand="A7o">A7o</td><td class="freq-0" data-hand="K7o">K7o</td><td class="freq-0" data-hand="Q7o">Q7o</td><td class="freq-0" data-hand="J7o">J7o</td><td class="freq-0" data-hand="T7o">T7o</td><td class="freq-0" data-hand="97o">97o</td><td class="freq-0" data-hand="87o">87o</td><td class="freq-0 hand-pair" data-hand="77">77</td><td class="freq-0 hand-suited" data-hand="76s">76s</td><td class="freq-0 hand-suited" data-hand="75s">75s</td><td class="freq-0 hand-suited" data-hand="74s">74s</td><td class="freq-0 hand-suited" data-hand="73s">73s</td><td class="freq-0 hand-suited" data-hand="72s">72s</td></tr>
+                  <tr><th>6</th><td class="freq-0" data-hand="A6o">A6o</td><td class="freq-0" data-hand="K6o">K6o</td><td class="freq-0" data-hand="Q6o">Q6o</td><td class="freq-0" data-hand="J6o">J6o</td><td class="freq-0" data-hand="T6o">T6o</td><td class="freq-0" data-hand="96o">96o</td><td class="freq-0" data-hand="86o">86o</td><td class="freq-0" data-hand="76o">76o</td><td class="freq-0 hand-pair" data-hand="66">66</td><td class="freq-0 hand-suited" data-hand="65s">65s</td><td class="freq-0 hand-suited" data-hand="64s">64s</td><td class="freq-0 hand-suited" data-hand="63s">63s</td><td class="freq-0 hand-suited" data-hand="62s">62s</td></tr>
+                  <tr><th>5</th><td class="freq-0" data-hand="A5o">A5o</td><td class="freq-0" data-hand="K5o">K5o</td><td class="freq-0" data-hand="Q5o">Q5o</td><td class="freq-0" data-hand="J5o">J5o</td><td class="freq-0" data-hand="T5o">T5o</td><td class="freq-0" data-hand="95o">95o</td><td class="freq-0" data-hand="85o">85o</td><td class="freq-0" data-hand="75o">75o</td><td class="freq-0" data-hand="65o">65o</td><td class="freq-0 hand-pair" data-hand="55">55</td><td class="freq-0 hand-suited" data-hand="54s">54s</td><td class="freq-0 hand-suited" data-hand="53s">53s</td><td class="freq-0 hand-suited" data-hand="52s">52s</td></tr>
+                  <tr><th>4</th><td class="freq-0" data-hand="A4o">A4o</td><td class="freq-0" data-hand="K4o">K4o</td><td class="freq-0" data-hand="Q4o">Q4o</td><td class="freq-0" data-hand="J4o">J4o</td><td class="freq-0" data-hand="T4o">T4o</td><td class="freq-0" data-hand="94o">94o</td><td class="freq-0" data-hand="84o">84o</td><td class="freq-0" data-hand="74o">74o</td><td class="freq-0" data-hand="64o">64o</td><td class="freq-0" data-hand="54o">54o</td><td class="freq-0 hand-pair" data-hand="44">44</td><td class="freq-0 hand-suited" data-hand="43s">43s</td><td class="freq-0 hand-suited" data-hand="42s">42s</td></tr>
+                  <tr><th>3</th><td class="freq-0" data-hand="A3o">A3o</td><td class="freq-0" data-hand="K3o">K3o</td><td class="freq-0" data-hand="Q3o">Q3o</td><td class="freq-0" data-hand="J3o">J3o</td><td class="freq-0" data-hand="T3o">T3o</td><td class="freq-0" data-hand="93o">93o</td><td class="freq-0" data-hand="83o">83o</td><td class="freq-0" data-hand="73o">73o</td><td class="freq-0" data-hand="63o">63o</td><td class="freq-0" data-hand="53o">53o</td><td class="freq-0" data-hand="43o">43o</td><td class="freq-0 hand-pair" data-hand="33">33</td><td class="freq-0 hand-suited" data-hand="32s">32s</td></tr>
+                  <tr><th>2</th><td class="freq-0" data-hand="A2o">A2o</td><td class="freq-0" data-hand="K2o">K2o</td><td class="freq-0" data-hand="Q2o">Q2o</td><td class="freq-0" data-hand="J2o">J2o</td><td class="freq-0" data-hand="T2o">T2o</td><td class="freq-0" data-hand="92o">92o</td><td class="freq-0" data-hand="82o">82o</td><td class="freq-0" data-hand="72o">72o</td><td class="freq-0" data-hand="62o">62o</td><td class="freq-0" data-hand="52o">52o</td><td class="freq-0" data-hand="42o">42o</td><td class="freq-0" data-hand="32o">32o</td><td class="freq-0 hand-pair" data-hand="22">22</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="matrix-legend">
+              <div class="legend-item"><div class="legend-swatch" style="background: var(--bg-secondary);"></div> Fold</div>
+              <div class="legend-item"><div class="legend-swatch" style="background: rgba(74,246,195,0.5);"></div> Push</div>
+              <div class="legend-item"><div class="legend-swatch" style="background: rgba(var(--accent-rgb),0.3);"></div> Mixed</div>
+            </div>
+          </div>
+        </div>
+        <div class="range-summary-bar" id="drill-summary-bar" style="margin:0 16px 8px;"></div>
+        </div><!-- /drill-matrix-section -->
+
+        <!-- Feedback Section -->
+        <div class="drill-feedback-section" id="drill-feedback">
+          <div class="panel-header">FEEDBACK</div>
+        <div class="panel-body">
+          <!-- Preflop feedback -->
+          <div id="drill-preflop-feedback">
+            <div id="feedback-empty" class="empty-state">
+              <div class="empty-state-icon">&#9654;</div>
+              <div class="empty-state-text">Start a drill to see GTO analysis</div>
+              <div class="empty-state-hint">Press F / C / R to submit</div>
+            </div>
+            <div id="feedback-content" class="hidden">
+              <div class="position-context-bar" id="feedback-position-bar"></div>
+              <div class="section-header">GTO Frequencies</div>
+              <div class="freq-bar-group mb-3">
+                <div class="freq-bar-item">
+                  <span class="freq-bar-label">Fold</span>
+                  <div class="freq-bar-track"><div class="freq-bar-fill fill-fold" id="freq-fold" style="width: 0%;"></div></div>
+                  <span class="freq-bar-value" id="freq-fold-val">0%</span>
+                </div>
+                <div class="freq-bar-item">
+                  <span class="freq-bar-label">Call</span>
+                  <div class="freq-bar-track"><div class="freq-bar-fill fill-call" id="freq-call" style="width: 0%;"></div></div>
+                  <span class="freq-bar-value" id="freq-call-val">0%</span>
+                </div>
+                <div class="freq-bar-item">
+                  <span class="freq-bar-label">Raise</span>
+                  <div class="freq-bar-track"><div class="freq-bar-fill fill-raise" id="freq-raise" style="width: 0%;"></div></div>
+                  <span class="freq-bar-value" id="freq-raise-val">0%</span>
+                </div>
+              </div>
+              <div class="verdict mt-3" id="verdict">
+                <span class="verdict-icon"></span>
+                <span class="verdict-text"></span>
+              </div>
+              <div class="mt-3">
+                <div class="stat-row"><span class="stat-label">Optimal</span><span class="stat-value" id="ev-optimal">--</span></div>
+                <div class="stat-row"><span class="stat-label">EV Loss</span><span class="stat-value negative" id="ev-loss">--</span></div>
+              </div>
+              <div class="feedback-stats-grid" style="margin-top:8px;">
+                <div class="feedback-stat-card">
+                  <div class="feedback-stat-label">Hand Equity</div>
+                  <div class="feedback-stat-value" id="feedback-equity">--</div>
+                </div>
+                <div class="feedback-stat-card">
+                  <div class="feedback-stat-label">Pot Odds</div>
+                  <div class="feedback-stat-value" id="feedback-pot-odds">--</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:6px; margin-top:12px;">
+                <button class="btn btn-secondary" id="btn-view-range-preflop" style="display:none; flex:1; padding:8px; font-size:11px; font-weight:600; letter-spacing:0.05em;">VIEW RANGE FOR THIS SPOT</button>
+                <button class="btn btn-sm" id="btn-explain-preflop" style="display:none;">Explain</button>
+              </div>
+              <div class="ai-insight mt-2 hidden" id="ai-insight-preflop">
+                <div class="ai-insight-header"><span>&#9889; GTO Analysis</span></div>
+                <div class="ai-insight-body" id="ai-insight-body">Click explain for AI analysis.</div>
+              </div>
+            </div>
+          </div>
+          <!-- Postflop feedback -->
+          <div id="drill-postflop-feedback" class="hidden">
+            <div id="postflop-feedback-empty" class="empty-state">
+              <div class="empty-state-icon">&#9654;</div>
+              <div class="empty-state-text">Start a drill to see GTO analysis</div>
+              <div class="empty-state-hint">Press X / 1 / 2 / 3 to submit</div>
+            </div>
+            <div id="postflop-feedback-content" class="hidden">
+              <div class="section-header">GTO Frequencies</div>
+              <div class="freq-bar-group mb-3" id="postflop-freq-bars">
+                <!-- Dynamically populated by _renderPostflopResult based on spot type -->
+                <!-- Betting spots: Check / Bet 1/3 / Bet 2/3 / Pot -->
+                <!-- Facing spots: Fold / Call / Raise -->
+              </div>
+              <div class="section-header mt-3">Your Action</div>
+              <div class="verdict mb-3" id="postflop-verdict"><span class="verdict-icon"></span><span class="verdict-text"></span></div>
+              <div class="section-header mt-3">EV Analysis</div>
+              <div class="mb-3">
+                <div class="stat-row"><span class="stat-label">Your EV</span><span class="stat-value" id="post-ev-yours">--</span></div>
+                <div class="stat-row"><span class="stat-label">Optimal EV</span><span class="stat-value" id="post-ev-optimal">--</span></div>
+                <div class="stat-row"><span class="stat-label">EV Loss</span><span class="stat-value negative" id="post-ev-loss">--</span></div>
+              </div>
+              <div id="drill-composition-line" style="display:none; font-size: 10px; color: var(--text-secondary); margin-top: 8px; padding: 6px 8px; background: var(--bg-secondary); border-radius: 4px;">
+                <span style="color: var(--accent); font-weight: 600;">RANGE:</span> <span id="drill-composition-text">--</span>
+              </div>
+              <div class="section-header mt-3">AI Insight</div>
+              <div class="ai-insight" id="ai-insight-postflop">
+                <div class="ai-insight-header"><span>&#9889; GTO Analysis</span></div>
+                <div class="ai-insight-body" id="ai-insight-postflop-body">Click explain for AI analysis.</div>
+              </div>
+              <button class="btn btn-sm mt-2" id="btn-explain-postflop">Explain</button>
+            </div>
+          </div>
+          <!-- Push/fold feedback -->
+          <div id="drill-pushfold-feedback" class="hidden">
+            <div id="mtt-feedback-empty" class="empty-state">
+              <div class="empty-state-icon">&#9654;</div>
+              <div class="empty-state-text">Start a drill to see GTO analysis</div>
+              <div class="empty-state-hint">Push or Fold to submit</div>
+            </div>
+            <div id="mtt-feedback-content" class="hidden">
+              <div class="section-header">GTO Frequencies</div>
+              <div class="freq-bar-group mb-3">
+                <div class="freq-bar-item"><span class="freq-bar-label">Fold</span><div class="freq-bar-track"><div class="freq-bar-fill fill-fold" id="mtt-freq-fold" style="width: 0%;"></div></div><span class="freq-bar-value" id="mtt-freq-fold-val">0%</span></div>
+                <div class="freq-bar-item"><span class="freq-bar-label">Push</span><div class="freq-bar-track"><div class="freq-bar-fill fill-raise" id="mtt-freq-push" style="width: 0%;"></div></div><span class="freq-bar-value" id="mtt-freq-push-val">0%</span></div>
+              </div>
+              <div class="section-header mt-3">Your Action</div>
+              <div class="verdict mb-3" id="mtt-verdict"><span class="verdict-icon"></span><span class="verdict-text"></span></div>
+              <div class="section-header mt-3">ICM-Adjusted EV</div>
+              <div class="mb-3">
+                <div class="stat-row"><span class="stat-label">Chip EV</span><span class="stat-value" id="mtt-cev">--</span></div>
+                <div class="stat-row"><span class="stat-label">ICM EV</span><span class="stat-value" id="mtt-icev">--</span></div>
+                <div class="stat-row"><span class="stat-label">EV Loss</span><span class="stat-value negative" id="mtt-ev-loss">--</span></div>
+                <div class="stat-row"><span class="stat-label">ICM Pressure</span><span class="stat-value" id="mtt-icm-pressure">--</span></div>
+                <div class="stat-row"><span class="stat-label">Bubble Factor</span><span class="stat-value" id="mtt-bubble-factor">--</span></div>
+                <div class="stat-row"><span class="stat-label">ICM Tax</span><span class="stat-value negative" id="mtt-icm-tax">--</span></div>
+              </div>
+              <div class="section-header mt-3">AI Insight</div>
+              <div class="ai-insight" id="ai-insight-mtt">
+                <div class="ai-insight-header"><span>&#9889; ICM Analysis</span></div>
+                <div class="ai-insight-body" id="ai-insight-mtt-body">Click explain for AI analysis.</div>
+              </div>
+              <button class="btn btn-sm mt-2" id="btn-explain-mtt">Explain</button>
+            </div>
+          </div>
+        </div>
+        </div><!-- /drill-feedback-section -->
+      </div><!-- /drill-right-column -->
+    </div>
+
+    <!-- ────────── VIEW 3: PLAYTHROUGH ────────── -->
+    <div id="view-playthrough" class="view" style="grid-template-columns: 35% 65%;">
+
+      <!-- LEFT: Playthrough Main -->
+      <div class="panel" id="play-main">
+        <div class="panel-header">
+          HAND PLAYTHROUGH
+          <span class="panel-tag">LIVE</span>
+        </div>
+        <div class="panel-body" style="padding:16px; display:flex; flex-direction:column;">
+
+          <!-- Config -->
+          <div id="play-config" class="drill-config">
+            <div class="config-row">
+              <label class="form-label">Format</label>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="toggle-group" id="play-format-toggle">
+                  <div class="toggle-option active" data-value="cash">CASH</div>
+                  <div class="toggle-option" data-value="mtt">MTT</div>
+                </div>
+                <div class="icm-toggle hidden" id="play-icm-toggle">
+                  <label class="toggle-switch" title="ICM adjustments">
+                    <input type="checkbox" id="play-icm-check" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                  <span style="font-size: 10px; color: var(--text-dim);">ICM</span>
+                </div>
+              </div>
+            </div>
+            <div class="config-row">
+              <label class="form-label">Stack</label>
+              <div class="toggle-group" id="play-stack-toggle">
+                <div class="toggle-option" data-value="20">20bb</div>
+                <div class="toggle-option" data-value="40">40bb</div>
+                <div class="toggle-option active" data-value="100">100bb</div>
+              </div>
+            </div>
+            <button class="btn btn-primary w-full mt-3" id="btn-start-play">START HAND</button>
+          </div>
+
+          <!-- Active hand -->
+          <div id="play-active" class="hidden" style="flex:1; display:flex; flex-direction:column;">
+            <!-- Hero + Board + Pot bar -->
+            <div style="display:flex; align-items:center; gap:16px; padding:12px; margin-bottom:12px; border:1px solid var(--border-dim); border-radius:var(--radius-md); background:var(--bg-secondary);">
+              <div>
+                <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">Hero</div>
+                <div class="card-container" id="play-hero-cards">
+                  <div class="playing-card card-facedown"></div>
+                  <div class="playing-card card-facedown"></div>
+                </div>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">Board</div>
+                <div class="card-container" id="play-board-cards" style="gap:3px;">
+                  <div class="playing-card card-facedown card-unrevealed" id="play-board-0"></div>
+                  <div class="playing-card card-facedown card-unrevealed" id="play-board-1"></div>
+                  <div class="playing-card card-facedown card-unrevealed" id="play-board-2"></div>
+                  <div class="playing-card card-facedown card-unrevealed play-board-gap" id="play-board-3"></div>
+                  <div class="playing-card card-facedown card-unrevealed play-board-gap" id="play-board-4"></div>
+                </div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:4px;">Pot</div>
+                <div id="play-pot" style="font-size:18px; font-weight:700; color:var(--accent);">--</div>
+              </div>
+            </div>
+
+            <!-- Table position display -->
+            <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px;">
+              <div class="table-display" id="play-table-display" style="margin:0; flex-shrink:0;">
+                <div class="table-oval"></div>
+                <div class="seat seat-utg" data-position="UTG">UTG</div>
+                <div class="seat seat-mp" data-position="MP">MP</div>
+                <div class="seat seat-co" data-position="CO">CO</div>
+                <div class="seat seat-btn" data-position="BTN">BTN</div>
+                <div class="seat seat-sb" data-position="SB">SB</div>
+                <div class="seat seat-bb" data-position="BB">BB</div>
+              </div>
+              <div style="font-size:11px; line-height:1.8;">
+                <div><span class="text-dim">Position: </span><span class="text-orange" id="play-position">--</span></div>
+                <div><span class="text-dim">Action: </span><span id="play-preflop-action">--</span></div>
+              </div>
+            </div>
+
+            <!-- Current street action area (dynamically rendered) -->
+            <div id="play-street-area">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <span style="font-size:10px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:0.1em;" id="play-street-label">PREFLOP</span>
+              </div>
+              <div class="action-buttons" id="play-current-actions">
+                <!-- Rendered dynamically per street -->
+              </div>
+            </div>
+
+            <!-- Street results table -->
+            <div id="play-street-results" style="margin-top:12px;">
+              <!-- Per-street result rows rendered here -->
+            </div>
+
+            <!-- End-of-hand actions -->
+            <div id="play-end-actions" class="hidden" style="margin-top:auto; padding:14px 0 0 0; border-top:1px solid var(--border-dim);">
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-primary" id="btn-next-hand" style="flex:1; padding:10px; font-size:13px; font-weight:700; letter-spacing:0.08em;">NEXT HAND <span class="key-hint" style="opacity:0.6; font-size:10px; margin-left:6px;">SPACE / N</span></button>
+                <button class="btn btn-secondary" id="btn-back-play-config" style="padding:10px 16px;">BACK</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: Range Analysis + Feedback Column -->
+      <div class="panel play-right-column">
+        <div class="play-matrix-section">
+          <div class="panel-header">
+            RANGE ANALYSIS
+            <span class="panel-tag" id="play-range-tag">PREFLOP</span>
+            <span class="panel-meta" id="play-hand-num">Hand #--</span>
+          </div>
+          <div class="panel-body">
+            <!-- Empty state before hand starts -->
+            <div id="play-range-empty" class="empty-state">
+              <div class="empty-state-icon">&#9830;</div>
+              <div class="empty-state-text">Deal a hand to begin</div>
+              <div class="empty-state-hint">Configure and press Start</div>
+            </div>
+            <!-- Preflop: 13x13 matrix -->
+            <div id="play-matrix-area" class="hidden">
+              <div class="hand-matrix-container">
+                <table class="hand-matrix" id="play-matrix-table">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>A</th><th>K</th><th>Q</th><th>J</th><th>T</th><th>9</th><th>8</th><th>7</th><th>6</th><th>5</th><th>4</th><th>3</th><th>2</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><th>A</th><td class="freq-0 hand-pair" data-hand="AA">AA</td><td class="freq-0 hand-suited" data-hand="AKs">AKs</td><td class="freq-0 hand-suited" data-hand="AQs">AQs</td><td class="freq-0 hand-suited" data-hand="AJs">AJs</td><td class="freq-0 hand-suited" data-hand="ATs">ATs</td><td class="freq-0 hand-suited" data-hand="A9s">A9s</td><td class="freq-0 hand-suited" data-hand="A8s">A8s</td><td class="freq-0 hand-suited" data-hand="A7s">A7s</td><td class="freq-0 hand-suited" data-hand="A6s">A6s</td><td class="freq-0 hand-suited" data-hand="A5s">A5s</td><td class="freq-0 hand-suited" data-hand="A4s">A4s</td><td class="freq-0 hand-suited" data-hand="A3s">A3s</td><td class="freq-0 hand-suited" data-hand="A2s">A2s</td></tr>
+                    <tr><th>K</th><td class="freq-0" data-hand="AKo">AKo</td><td class="freq-0 hand-pair" data-hand="KK">KK</td><td class="freq-0 hand-suited" data-hand="KQs">KQs</td><td class="freq-0 hand-suited" data-hand="KJs">KJs</td><td class="freq-0 hand-suited" data-hand="KTs">KTs</td><td class="freq-0 hand-suited" data-hand="K9s">K9s</td><td class="freq-0 hand-suited" data-hand="K8s">K8s</td><td class="freq-0 hand-suited" data-hand="K7s">K7s</td><td class="freq-0 hand-suited" data-hand="K6s">K6s</td><td class="freq-0 hand-suited" data-hand="K5s">K5s</td><td class="freq-0 hand-suited" data-hand="K4s">K4s</td><td class="freq-0 hand-suited" data-hand="K3s">K3s</td><td class="freq-0 hand-suited" data-hand="K2s">K2s</td></tr>
+                    <tr><th>Q</th><td class="freq-0" data-hand="AQo">AQo</td><td class="freq-0" data-hand="KQo">KQo</td><td class="freq-0 hand-pair" data-hand="QQ">QQ</td><td class="freq-0 hand-suited" data-hand="QJs">QJs</td><td class="freq-0 hand-suited" data-hand="QTs">QTs</td><td class="freq-0 hand-suited" data-hand="Q9s">Q9s</td><td class="freq-0 hand-suited" data-hand="Q8s">Q8s</td><td class="freq-0 hand-suited" data-hand="Q7s">Q7s</td><td class="freq-0 hand-suited" data-hand="Q6s">Q6s</td><td class="freq-0 hand-suited" data-hand="Q5s">Q5s</td><td class="freq-0 hand-suited" data-hand="Q4s">Q4s</td><td class="freq-0 hand-suited" data-hand="Q3s">Q3s</td><td class="freq-0 hand-suited" data-hand="Q2s">Q2s</td></tr>
+                    <tr><th>J</th><td class="freq-0" data-hand="AJo">AJo</td><td class="freq-0" data-hand="KJo">KJo</td><td class="freq-0" data-hand="QJo">QJo</td><td class="freq-0 hand-pair" data-hand="JJ">JJ</td><td class="freq-0 hand-suited" data-hand="JTs">JTs</td><td class="freq-0 hand-suited" data-hand="J9s">J9s</td><td class="freq-0 hand-suited" data-hand="J8s">J8s</td><td class="freq-0 hand-suited" data-hand="J7s">J7s</td><td class="freq-0 hand-suited" data-hand="J6s">J6s</td><td class="freq-0 hand-suited" data-hand="J5s">J5s</td><td class="freq-0 hand-suited" data-hand="J4s">J4s</td><td class="freq-0 hand-suited" data-hand="J3s">J3s</td><td class="freq-0 hand-suited" data-hand="J2s">J2s</td></tr>
+                    <tr><th>T</th><td class="freq-0" data-hand="ATo">ATo</td><td class="freq-0" data-hand="KTo">KTo</td><td class="freq-0" data-hand="QTo">QTo</td><td class="freq-0" data-hand="JTo">JTo</td><td class="freq-0 hand-pair" data-hand="TT">TT</td><td class="freq-0 hand-suited" data-hand="T9s">T9s</td><td class="freq-0 hand-suited" data-hand="T8s">T8s</td><td class="freq-0 hand-suited" data-hand="T7s">T7s</td><td class="freq-0 hand-suited" data-hand="T6s">T6s</td><td class="freq-0 hand-suited" data-hand="T5s">T5s</td><td class="freq-0 hand-suited" data-hand="T4s">T4s</td><td class="freq-0 hand-suited" data-hand="T3s">T3s</td><td class="freq-0 hand-suited" data-hand="T2s">T2s</td></tr>
+                    <tr><th>9</th><td class="freq-0" data-hand="A9o">A9o</td><td class="freq-0" data-hand="K9o">K9o</td><td class="freq-0" data-hand="Q9o">Q9o</td><td class="freq-0" data-hand="J9o">J9o</td><td class="freq-0" data-hand="T9o">T9o</td><td class="freq-0 hand-pair" data-hand="99">99</td><td class="freq-0 hand-suited" data-hand="98s">98s</td><td class="freq-0 hand-suited" data-hand="97s">97s</td><td class="freq-0 hand-suited" data-hand="96s">96s</td><td class="freq-0 hand-suited" data-hand="95s">95s</td><td class="freq-0 hand-suited" data-hand="94s">94s</td><td class="freq-0 hand-suited" data-hand="93s">93s</td><td class="freq-0 hand-suited" data-hand="92s">92s</td></tr>
+                    <tr><th>8</th><td class="freq-0" data-hand="A8o">A8o</td><td class="freq-0" data-hand="K8o">K8o</td><td class="freq-0" data-hand="Q8o">Q8o</td><td class="freq-0" data-hand="J8o">J8o</td><td class="freq-0" data-hand="T8o">T8o</td><td class="freq-0" data-hand="98o">98o</td><td class="freq-0 hand-pair" data-hand="88">88</td><td class="freq-0 hand-suited" data-hand="87s">87s</td><td class="freq-0 hand-suited" data-hand="86s">86s</td><td class="freq-0 hand-suited" data-hand="85s">85s</td><td class="freq-0 hand-suited" data-hand="84s">84s</td><td class="freq-0 hand-suited" data-hand="83s">83s</td><td class="freq-0 hand-suited" data-hand="82s">82s</td></tr>
+                    <tr><th>7</th><td class="freq-0" data-hand="A7o">A7o</td><td class="freq-0" data-hand="K7o">K7o</td><td class="freq-0" data-hand="Q7o">Q7o</td><td class="freq-0" data-hand="J7o">J7o</td><td class="freq-0" data-hand="T7o">T7o</td><td class="freq-0" data-hand="97o">97o</td><td class="freq-0" data-hand="87o">87o</td><td class="freq-0 hand-pair" data-hand="77">77</td><td class="freq-0 hand-suited" data-hand="76s">76s</td><td class="freq-0 hand-suited" data-hand="75s">75s</td><td class="freq-0 hand-suited" data-hand="74s">74s</td><td class="freq-0 hand-suited" data-hand="73s">73s</td><td class="freq-0 hand-suited" data-hand="72s">72s</td></tr>
+                    <tr><th>6</th><td class="freq-0" data-hand="A6o">A6o</td><td class="freq-0" data-hand="K6o">K6o</td><td class="freq-0" data-hand="Q6o">Q6o</td><td class="freq-0" data-hand="J6o">J6o</td><td class="freq-0" data-hand="T6o">T6o</td><td class="freq-0" data-hand="96o">96o</td><td class="freq-0" data-hand="86o">86o</td><td class="freq-0" data-hand="76o">76o</td><td class="freq-0 hand-pair" data-hand="66">66</td><td class="freq-0 hand-suited" data-hand="65s">65s</td><td class="freq-0 hand-suited" data-hand="64s">64s</td><td class="freq-0 hand-suited" data-hand="63s">63s</td><td class="freq-0 hand-suited" data-hand="62s">62s</td></tr>
+                    <tr><th>5</th><td class="freq-0" data-hand="A5o">A5o</td><td class="freq-0" data-hand="K5o">K5o</td><td class="freq-0" data-hand="Q5o">Q5o</td><td class="freq-0" data-hand="J5o">J5o</td><td class="freq-0" data-hand="T5o">T5o</td><td class="freq-0" data-hand="95o">95o</td><td class="freq-0" data-hand="85o">85o</td><td class="freq-0" data-hand="75o">75o</td><td class="freq-0" data-hand="65o">65o</td><td class="freq-0 hand-pair" data-hand="55">55</td><td class="freq-0 hand-suited" data-hand="54s">54s</td><td class="freq-0 hand-suited" data-hand="53s">53s</td><td class="freq-0 hand-suited" data-hand="52s">52s</td></tr>
+                    <tr><th>4</th><td class="freq-0" data-hand="A4o">A4o</td><td class="freq-0" data-hand="K4o">K4o</td><td class="freq-0" data-hand="Q4o">Q4o</td><td class="freq-0" data-hand="J4o">J4o</td><td class="freq-0" data-hand="T4o">T4o</td><td class="freq-0" data-hand="94o">94o</td><td class="freq-0" data-hand="84o">84o</td><td class="freq-0" data-hand="74o">74o</td><td class="freq-0" data-hand="64o">64o</td><td class="freq-0" data-hand="54o">54o</td><td class="freq-0 hand-pair" data-hand="44">44</td><td class="freq-0 hand-suited" data-hand="43s">43s</td><td class="freq-0 hand-suited" data-hand="42s">42s</td></tr>
+                    <tr><th>3</th><td class="freq-0" data-hand="A3o">A3o</td><td class="freq-0" data-hand="K3o">K3o</td><td class="freq-0" data-hand="Q3o">Q3o</td><td class="freq-0" data-hand="J3o">J3o</td><td class="freq-0" data-hand="T3o">T3o</td><td class="freq-0" data-hand="93o">93o</td><td class="freq-0" data-hand="83o">83o</td><td class="freq-0" data-hand="73o">73o</td><td class="freq-0" data-hand="63o">63o</td><td class="freq-0" data-hand="53o">53o</td><td class="freq-0" data-hand="43o">43o</td><td class="freq-0 hand-pair" data-hand="33">33</td><td class="freq-0 hand-suited" data-hand="32s">32s</td></tr>
+                    <tr><th>2</th><td class="freq-0" data-hand="A2o">A2o</td><td class="freq-0" data-hand="K2o">K2o</td><td class="freq-0" data-hand="Q2o">Q2o</td><td class="freq-0" data-hand="J2o">J2o</td><td class="freq-0" data-hand="T2o">T2o</td><td class="freq-0" data-hand="92o">92o</td><td class="freq-0" data-hand="82o">82o</td><td class="freq-0" data-hand="72o">72o</td><td class="freq-0" data-hand="62o">62o</td><td class="freq-0" data-hand="52o">52o</td><td class="freq-0" data-hand="42o">42o</td><td class="freq-0" data-hand="32o">32o</td><td class="freq-0 hand-pair" data-hand="22">22</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="matrix-legend">
+                <div class="legend-item"><div class="legend-swatch" style="background:rgba(74,246,195,0.5)"></div>Raise</div>
+                <div class="legend-item"><div class="legend-swatch" style="background:rgba(0,104,255,0.5)"></div>Call</div>
+                <div class="legend-item"><div class="legend-swatch" style="background:linear-gradient(to right, rgba(74,246,195,0.5) 50%, rgba(0,104,255,0.5) 50%)"></div>Mixed</div>
+                <div class="legend-item"><div class="legend-swatch" style="background:#1a1a1a"></div>Fold</div>
+              </div>
+            </div>
+            <!-- Postflop: board + texture -->
+            <div id="play-board-area" class="hidden">
+              <div id="play-range-board-display">
+                <!-- Board cards rendered dynamically by GTO.UI.BoardDisplay.renderBoard -->
+              </div>
+                <div class="section-header mt-3">Texture Analysis</div>
+                <div class="mt-2">
+                  <div class="stat-row"><span class="stat-label">Texture</span><span class="stat-value" id="play-texture-type">--</span></div>
+                  <div class="stat-row"><span class="stat-label">Wetness</span><span class="stat-value" id="play-texture-wetness">--</span></div>
+                  <div class="stat-row"><span class="stat-label">Connectivity</span><span class="stat-value" id="play-texture-connect">--</span></div>
+                  <div class="stat-row"><span class="stat-label">Flush Draw</span><span class="stat-value" id="play-texture-flush">--</span></div>
+                  <div class="stat-row"><span class="stat-label">High Card</span><span class="stat-value" id="play-texture-high">--</span></div>
+                </div>
+                <div class="section-header mt-3">Hand Strength</div>
+                <div class="mt-2">
+                  <div class="stat-row"><span class="stat-label">Classification</span><span class="stat-value" id="play-hand-strength">--</span></div>
+                </div>
+                <div class="section-header mt-3" id="play-preflop-path-header" style="display:none;">Hero Range (Preflop Path)</div>
+                <div class="mt-2" id="play-preflop-path-stats" style="display:none;">
+                  <div class="stat-row"><span class="stat-label">Action</span><span class="stat-value text-orange" id="play-range-action">--</span></div>
+                  <div class="stat-row"><span class="stat-label">Range Size</span><span class="stat-value" id="play-range-count">--</span></div>
+                </div>
+                <div class="section-header mt-3">Range Advantage</div>
+                <div class="freq-bar-group mt-2">
+                  <div class="freq-bar-item">
+                    <span class="freq-bar-label">IP</span>
+                    <div class="freq-bar-track"><div class="freq-bar-fill fill-raise" id="play-range-adv-ip" style="width: 50%;"></div></div>
+                    <span class="freq-bar-value" id="play-range-adv-ip-val">50%</span>
+                  </div>
+                  <div class="freq-bar-item">
+                    <span class="freq-bar-label">OOP</span>
+                    <div class="freq-bar-track"><div class="freq-bar-fill fill-call" id="play-range-adv-oop" style="width: 50%;"></div></div>
+                    <span class="freq-bar-value" id="play-range-adv-oop-val">50%</span>
+                  </div>
+                </div>
+                <div class="section-header mt-3" id="play-composition-header" style="display:none;">Range Composition</div>
+                <div id="play-composition-bars" style="display:none;" class="freq-bar-group mt-2">
+                  <div class="freq-bar-item"><span class="freq-bar-label">Monsters</span><div class="freq-bar-track"><div class="freq-bar-fill fill-raise" id="play-comp-monsters" style="width:0%"></div></div><span class="freq-bar-value" id="play-comp-monsters-val">--</span></div>
+                  <div class="freq-bar-item"><span class="freq-bar-label">Strong</span><div class="freq-bar-track"><div class="freq-bar-fill fill-call" id="play-comp-strong" style="width:0%"></div></div><span class="freq-bar-value" id="play-comp-strong-val">--</span></div>
+                  <div class="freq-bar-item"><span class="freq-bar-label">Medium</span><div class="freq-bar-track"><div class="freq-bar-fill fill-check" id="play-comp-medium" style="width:0%"></div></div><span class="freq-bar-value" id="play-comp-medium-val">--</span></div>
+                  <div class="freq-bar-item"><span class="freq-bar-label">Draws</span><div class="freq-bar-track"><div class="freq-bar-fill fill-bet" id="play-comp-draws" style="width:0%"></div></div><span class="freq-bar-value" id="play-comp-draws-val">--</span></div>
+                  <div class="freq-bar-item"><span class="freq-bar-label">Weak</span><div class="freq-bar-track"><div class="freq-bar-fill fill-fold" id="play-comp-weak" style="width:0%"></div></div><span class="freq-bar-value" id="play-comp-weak-val">--</span></div>
+                  <div class="freq-bar-item"><span class="freq-bar-label">Air</span><div class="freq-bar-track"><div class="freq-bar-fill" style="width:0%; background: var(--text-dim);" id="play-comp-air"></div></div><span class="freq-bar-value" id="play-comp-air-val">--</span></div>
+                </div>
+            </div>
+          </div>
+          <div class="range-summary-bar" id="play-summary-bar" style="margin:0 16px 8px;"></div>
+        </div><!-- /play-matrix-section -->
+
+        <!-- Feedback Section -->
+        <div class="play-feedback-section">
+          <div class="panel-header">FEEDBACK</div>
+          <div class="panel-body">
+            <div id="play-feedback-empty" class="empty-state">
+              <div class="empty-state-icon">&#9654;</div>
+              <div class="empty-state-text">Choose your action</div>
+              <div class="empty-state-hint">Press F / C / R to submit</div>
+            </div>
+            <div id="play-feedback-content" class="hidden">
+              <div class="position-context-bar" id="play-position-bar"></div>
+              <div class="section-header">GTO Frequencies</div>
+              <div class="freq-bar-group mb-3" id="play-freq-bars">
+                <!-- Dynamically populated per street -->
+              </div>
+              <div class="verdict mt-3" id="play-verdict">
+                <span class="verdict-icon"></span>
+                <span class="verdict-text"></span>
+              </div>
+              <div class="mt-3">
+                <div class="stat-row"><span class="stat-label">Optimal</span><span class="stat-value" id="play-ev-optimal">--</span></div>
+                <div class="stat-row"><span class="stat-label">EV Loss</span><span class="stat-value negative" id="play-ev-loss">--</span></div>
+              </div>
+              <div id="play-icm-stats" class="hidden mt-2" style="border-top: 1px solid var(--bg-tertiary); padding-top: 6px;">
+                <div class="stat-row"><span class="stat-label">ICM Pressure</span><span class="stat-value" id="play-icm-pressure">--</span></div>
+                <div class="stat-row"><span class="stat-label">Bubble Factor</span><span class="stat-value" id="play-bubble-factor">--</span></div>
+                <div class="stat-row"><span class="stat-label">ICM EV</span><span class="stat-value" id="play-icm-ev">--</span></div>
+                <div class="stat-row"><span class="stat-label">ICM Tax</span><span class="stat-value negative" id="play-icm-tax">--</span></div>
+              </div>
+              <div class="feedback-stats-grid" style="margin-top:8px;">
+                <div class="feedback-stat-card">
+                  <div class="feedback-stat-label">Hand Equity</div>
+                  <div class="feedback-stat-value" id="play-feedback-equity">--</div>
+                </div>
+                <div class="feedback-stat-card">
+                  <div class="feedback-stat-label">Pot Odds</div>
+                  <div class="feedback-stat-value" id="play-feedback-pot-odds">--</div>
+                </div>
+              </div>
+              <div class="ai-insight mt-2" id="ai-insight-play">
+                <div class="ai-insight-header"><span>&#9889; Hand Review</span></div>
+                <div class="ai-insight-body" id="ai-insight-play-body">Complete the hand for AI review.</div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /play-feedback-section -->
+      </div><!-- /play-right-column -->
+    </div>
+
+
+    <!-- ────────── VIEW 4: PLANS ────────── -->
+    <div id="view-plans" class="view" style="grid-template-columns: 45% 55%;">
+
+      <!-- LEFT: Active Plan -->
+      <div class="panel">
+        <div class="panel-header">ACTIVE PLAN <span class="panel-meta" id="active-plan-format"></span></div>
+        <div class="panel-body" style="padding: 16px;">
+          <div style="margin-bottom: 14px;">
+            <div class="stat-row">
+              <span class="stat-label">PLAN</span>
+              <span class="stat-value text-orange" id="active-plan-name">No active plan</span>
+            </div>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--text-dim); margin-bottom:4px;">
+              <span>PROGRESS</span>
+              <span id="active-plan-pct">0/0 sessions</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="active-plan-bar" style="width: 0%;"></div>
+            </div>
+          </div>
+          <div style="border-top:1px solid var(--border-dim); padding-top:14px; margin-bottom:8px;">
+            <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent); margin-bottom:10px;">Upcoming Sessions</div>
+            <div id="plan-upcoming-sessions">
+              <div style="padding:16px 0; text-align:center;">
+                <div style="font-size:20px; color:var(--text-dim); margin-bottom:8px;">&#9776;</div>
+                <div style="color:var(--text-secondary); font-size:11px; line-height:1.6;">No active plan.<br>Select a template to get started.</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top: 16px;">
+            <button class="btn btn-danger btn-sm" id="btn-delete-plan" style="display:none;">Delete Plan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Plan Templates -->
+      <div class="panel">
+        <div class="panel-header">PLAN TEMPLATES</div>
+        <div class="panel-body" style="padding: 16px;">
+          <div id="plan-templates-list" style="display:flex; flex-direction:column; gap:8px;">
+            <div class="drill-item">
+              <div class="drill-item-num">1</div>
+              <div class="drill-item-info">
+                <span class="drill-item-title">MTT Fundamentals</span>
+                <span class="drill-item-desc">Complete tournament training — 4 weeks, 5 sessions/wk. Covers RFI, defense, push/fold, ICM, c-betting.</span>
+              </div>
+              <div class="drill-item-actions">
+                <span class="text-dim" style="font-size:10px; margin-right:6px;">4 wk</span>
+                <button class="btn btn-primary btn-sm">Select</button>
+              </div>
+            </div>
+            <div class="drill-item">
+              <div class="drill-item-num">2</div>
+              <div class="drill-item-info">
+                <span class="drill-item-title">Cash Game Grinder</span>
+                <span class="drill-item-desc">Intensive 2-week 6-max cash game training. 100bb deep, full range work + postflop.</span>
+              </div>
+              <div class="drill-item-actions">
+                <span class="text-dim" style="font-size:10px; margin-right:6px;">2 wk</span>
+                <button class="btn btn-primary btn-sm">Select</button>
+              </div>
+            </div>
+            <div class="drill-item">
+              <div class="drill-item-num">3</div>
+              <div class="drill-item-info">
+                <span class="drill-item-title">Tournament Prep</span>
+                <span class="drill-item-desc">Customizable plan targeting a specific tournament date. MTT ranges + push/fold + postflop.</span>
+              </div>
+              <div class="drill-item-actions">
+                <span class="text-dim" style="font-size:10px; margin-right:6px;">Custom</span>
+                <button class="btn btn-primary btn-sm">Select</button>
+              </div>
+            </div>
+            <div class="drill-item">
+              <div class="drill-item-num">4</div>
+              <div class="drill-item-info">
+                <span class="drill-item-title">Leak Plugger</span>
+                <span class="drill-item-desc">Auto-generated from your weakest areas. Requires drill history data.</span>
+              </div>
+              <div class="drill-item-actions">
+                <span class="text-dim" style="font-size:10px; margin-right:6px;">1 wk</span>
+                <button class="btn btn-primary btn-sm">Select</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────── VIEW 5: LEARN ────────── -->
+    <div id="view-learn" class="view" style="grid-template-columns: 65% 35%;">
+
+      <!-- LEFT: Content Catalog -->
+      <div class="panel">
+        <div class="panel-header">LEARN <span class="panel-meta">GTO Strategy Library</span></div>
+        <div class="panel-body" style="padding: 16px;">
+
+          <!-- Catalog panel (toggled with article panel) -->
+          <div class="learn-catalog-panel">
+
+            <!-- Recommended -->
+            <div class="learn-recommended">
+              <div class="learn-section-header">RECOMMENDED FOR YOU</div>
+              <div id="learn-recommended"></div>
+            </div>
+
+            <!-- Filters -->
+            <div class="learn-section-header">ALL TOPICS</div>
+            <div class="learn-filters" id="learn-filters"></div>
+
+            <!-- Topic list -->
+            <div class="learn-topic-list" id="learn-catalog"></div>
+          </div>
+
+          <!-- Article panel (hidden by default) -->
+          <div class="learn-article-panel">
+            <button class="learn-back-btn">&larr; BACK TO CATALOG</button>
+            <div class="learn-article-scroll">
+              <div class="learn-article-title" id="learn-article-title"></div>
+              <div class="learn-article-meta" id="learn-article-meta"></div>
+              <div class="learn-article-summary" id="learn-article-summary"></div>
+              <div style="margin-bottom: 12px;">
+                <button class="learn-generate-btn" id="learn-generate-btn">&#9889; GENERATE ARTICLE</button>
+              </div>
+              <div class="learn-article-body" id="learn-article-body"></div>
+              <div class="learn-drill-list" id="learn-article-drills"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT: Progress Sidebar -->
+      <div class="panel">
+        <div class="panel-header">PROGRESS</div>
+        <div class="panel-body" style="padding: 16px;">
+
+          <div class="learn-progress-card">
+            <div class="learn-progress-label">READING PROGRESS</div>
+            <div class="learn-progress-value" id="learn-read-count">0 / 25</div>
+            <div style="margin-top:8px;">
+              <div class="progress-bar">
+                <div class="progress-fill" id="learn-progress-bar" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="learn-progress-card">
+            <div class="learn-progress-label">YOUR WEAKNESSES</div>
+            <div id="learn-weakness-snapshot" style="margin-top:8px;">
+              <div class="text-dim" style="font-size:10px;">No weaknesses detected yet.</div>
+            </div>
+          </div>
+
+          <div class="learn-progress-card">
+            <div class="learn-progress-label">CACHE</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+              <span class="text-dim" style="font-size:10px;">Stored: <span id="learn-cache-size">0 KB</span></span>
+              <button class="btn btn-sm" id="learn-clear-cache" style="font-size:9px;">Clear</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────── VIEW 6: STATS ────────── -->
+    <div id="view-stats" class="view" style="grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr 1fr;">
+
+      <!-- Full Width: Player Profile -->
+      <div class="panel profile-panel" id="stats-profile">
+        <div class="panel-header">PLAYER PROFILE</div>
+        <div class="panel-body" style="padding: 16px;">
+          <div class="text-dim" style="font-size:10px;">Loading profile...</div>
+        </div>
+      </div>
+
+      <!-- Top Left: Accuracy by Position -->
+      <div class="panel" id="stats-positions">
+        <div class="panel-header">ACCURACY BY POSITION</div>
+        <div class="panel-body">
+          <div class="chart-container">
+            <div class="chart-header">
+              <span>Position Accuracy</span>
+              <span class="chart-period">Last 7 days</span>
+            </div>
+            <div class="bar-chart" id="position-accuracy-chart">
+              <div class="bar-row">
+                <span class="bar-label">UTG</span>
+                <div class="bar-track"><div class="bar-fill fill-mid" style="width: 0%;"></div></div>
+                <span class="bar-value">--%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">MP</span>
+                <div class="bar-track"><div class="bar-fill fill-mid" style="width: 0%;"></div></div>
+                <span class="bar-value">--%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">CO</span>
+                <div class="bar-track"><div class="bar-fill fill-mid" style="width: 0%;"></div></div>
+                <span class="bar-value">--%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">BTN</span>
+                <div class="bar-track"><div class="bar-fill fill-mid" style="width: 0%;"></div></div>
+                <span class="bar-value">--%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">SB</span>
+                <div class="bar-track"><div class="bar-fill fill-mid" style="width: 0%;"></div></div>
+                <span class="bar-value">--%</span>
+              </div>
+              <div class="bar-row">
+                <span class="bar-label">BB</span>
+                <div class="bar-track"><div class="bar-fill fill-mid" style="width: 0%;"></div></div>
+                <span class="bar-value">--%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Right: EV Loss Trend -->
+      <div class="panel" id="stats-trend">
+        <div class="panel-header">EV LOSS TREND</div>
+        <div class="panel-body">
+          <div class="chart-container">
+            <div class="chart-header">
+              <span>EV Loss Over Time</span>
+              <span class="chart-period">Last 30 sessions</span>
+            </div>
+            <div class="canvas-chart" id="ev-trend-chart">
+              <canvas id="ev-trend-canvas"></canvas>
+            </div>
+            <div class="mt-2">
+              <div class="stat-row">
+                <span class="stat-label">Avg EV Loss</span>
+                <span class="stat-value" id="stats-avg-ev">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Best Session</span>
+                <span class="stat-value positive" id="stats-best">--</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Trend</span>
+                <span class="stat-value" id="stats-trend-dir">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Left: Weakness Report -->
+      <div class="panel" id="stats-weaknesses">
+        <div class="panel-header">WEAKNESS REPORT</div>
+        <div class="panel-body">
+          <div class="chart-header">
+            <span>Top Leak Areas</span>
+            <span class="chart-period">All time</span>
+          </div>
+          <div class="weakness-list" id="weakness-list">
+            <div class="empty-state">
+              <div class="empty-state-icon">!</div>
+              <div class="empty-state-text">Complete drills to identify leak areas</div>
+              <div class="empty-state-hint">Need 10+ decisions per spot type</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Right: Session History -->
+      <div class="panel" id="stats-history">
+        <div class="panel-header">SESSION HISTORY</div>
+        <div class="panel-body">
+          <div class="chart-header">
+            <span>Recent Sessions</span>
+            <span class="chart-period">Last 20</span>
+          </div>
+          <table class="data-table" id="session-history-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Hands</th>
+                <th>Accuracy</th>
+                <th>EV Loss</th>
+              </tr>
+            </thead>
+            <tbody id="session-history-body">
+              <tr>
+                <td colspan="5" style="padding: 0;">
+                  <div class="empty-state">
+                    <div class="empty-state-icon">&#9776;</div>
+                    <div class="empty-state-text">No sessions recorded yet</div>
+                    <div class="empty-state-hint">Complete a drill to see history</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ────────── VIEW 7: STREAM ────────── -->
+    <div id="view-stream" class="view" style="grid-template-columns: 65% 35%;">
+
+      <!-- LEFT: Stream Player -->
+      <div class="panel">
+        <div class="panel-header">
+          LIVE STREAM
+          <span class="panel-tag" id="stream-channel-tag">NO CHANNEL</span>
+        </div>
+        <div class="panel-body" style="padding: 12px;">
+          <!-- Stream player -->
+          <div class="stream-player-wrap" id="stream-player-container">
+            <div class="stream-player-empty">
+              <div class="stream-player-empty-icon">&#9654;</div>
+              <div>Select a stream or enter a Twitch channel</div>
+            </div>
+          </div>
+
+          <!-- Info bar -->
+          <div class="stream-info-bar" id="stream-info-bar">
+            <span class="text-dim">No stream selected</span>
+          </div>
+
+          <!-- Controls -->
+          <div class="stream-controls">
+            <input type="text" class="stream-channel-input" id="stream-channel-input" placeholder="Twitch / YouTube channel or paste URL...">
+            <button class="stream-ctrl-btn" id="stream-load-btn">LOAD</button>
+            <button class="stream-ctrl-btn" id="stream-pip-btn" title="Mini player (picture-in-picture)">PiP</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Catalog + Schedule + Spot Entry -->
+      <div class="panel">
+        <div class="panel-header">STREAMS &amp; SCHEDULE</div>
+        <div class="panel-body" style="padding: 12px;">
+          <!-- Category filters -->
+          <div class="stream-filters" id="stream-filters"></div>
+
+          <!-- Stream catalog -->
+          <div class="stream-catalog-scroll">
+            <div id="stream-catalog"></div>
+          </div>
+
+          <!-- Schedule -->
+          <div class="stream-section-header">UPCOMING EVENTS</div>
+          <div class="stream-schedule-list" id="stream-schedule"></div>
+
+          <!-- Spot Analysis — Vision AI -->
+          <div class="stream-section-header">HAND ANALYSIS</div>
+          <div class="spot-entry-form">
+            <div class="spot-drop-zone" id="spot-drop-zone">
+              <div style="font-size:18px; opacity:0.3; margin-bottom:4px;">&#128247;</div>
+              <div>Click <strong>ANALYZE</strong> to capture screen</div>
+              <div style="margin-top:2px;">or paste screenshot (Cmd+V)</div>
+            </div>
+            <div id="spot-screenshot-preview" style="display:none; align-items:center; gap:8px; margin-bottom:8px;"></div>
+            <input type="file" id="spot-file-input" accept="image/*" style="display:none;">
+            <button class="spot-analyze-btn" id="spot-analyze-btn">&#9889; ANALYZE HAND</button>
+            <div class="spot-result" id="spot-result" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /workspace -->
+
+  <!-- ═══════════════════ STATUS BAR ═══════════════════ -->
+  <div id="status-bar">
+    <div class="status-item">
+      <span class="status-label">Session</span>
+      <span class="status-value" id="status-session">--/--</span>
+    </div>
+    <div class="status-divider"></div>
+    <div class="status-item">
+      <span class="status-label">Accuracy</span>
+      <span class="status-value" id="status-accuracy">--%</span>
+    </div>
+    <div class="status-divider"></div>
+    <div class="status-item">
+      <span class="status-label">EV Loss</span>
+      <span class="status-value" id="status-ev-loss">--</span>
+    </div>
+    <div class="status-divider"></div>
+    <div class="status-item">
+      <span class="status-value highlight" id="status-format">CASH 6-MAX</span>
+    </div>
+    <div class="status-right">
+      <span class="text-dim">? HELP</span>
+      <div class="status-divider"></div>
+      <span class="status-value" id="status-clock">--:--</span>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ═══════════════════ TOAST CONTAINER ═══════════════════ -->
+<div id="toast-container"></div>
+
+<!-- ═══════════════════ MODAL: SETTINGS ═══════════════════ -->
+<div id="modal-settings" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Settings</span>
+      <button class="modal-close" data-close="modal-settings">&times;</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label class="form-label">Groq API Key</label>
+        <input type="text" class="form-input" id="settings-api-key" value="" placeholder="gsk_...">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Default Format</label>
+        <div class="toggle-group" id="settings-format">
+          <div class="toggle-option active" data-value="cash">CASH</div>
+          <div class="toggle-option" data-value="mtt">MTT</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Sound Effects</label>
+        <div class="toggle-group" id="settings-sound">
+          <div class="toggle-option active" data-value="on">ON</div>
+          <div class="toggle-option" data-value="off">OFF</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Accent Color</label>
+        <div class="toggle-group" id="settings-accent">
+          <div class="toggle-option active" data-value="orange" style="color:#ff8c00;">ORANGE</div>
+          <div class="toggle-option" data-value="green" style="color:#4af6c3;">GREEN</div>
+          <div class="toggle-option" data-value="blue" style="color:#4a9eff;">BLUE</div>
+          <div class="toggle-option" data-value="cyan" style="color:#00e5ff;">CYAN</div>
+          <div class="toggle-option" data-value="purple" style="color:#b388ff;">PURPLE</div>
+          <div class="toggle-option" data-value="red" style="color:#ff5252;">RED</div>
+          <div class="toggle-option" data-value="gold" style="color:#ffd700;">GOLD</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Range Colors</label>
+        <div class="toggle-group" id="settings-range-scheme">
+          <div class="toggle-option active" data-value="classic">CLASSIC</div>
+          <div class="toggle-option" data-value="warm">WARM</div>
+          <div class="toggle-option" data-value="cool">COOL</div>
+          <div class="toggle-option" data-value="mono">MONO</div>
+          <div class="toggle-option" data-value="redblue">RED-BLUE</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Boot Screen</label>
+        <div class="toggle-group" id="settings-boot">
+          <div class="toggle-option" data-value="on">EVERY LOAD</div>
+          <div class="toggle-option active" data-value="off">FIRST TIME ONLY</div>
+        </div>
+      </div>
+
+      <div class="form-group mt-4">
+        <button class="btn btn-danger w-full" id="btn-reset-data">Reset All Data</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MODAL: HELP ═══════════════════ -->
+<div id="modal-help" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Keyboard Shortcuts</span>
+      <button class="modal-close" data-close="modal-help">&times;</button>
+    </div>
+    <div class="modal-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Key</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="key-hint">1</span></td><td>Explore Ranges</td></tr>
+          <tr><td><span class="key-hint">2</span></td><td>Drill Trainer</td></tr>
+          <tr><td><span class="key-hint">3</span></td><td>Hand Playthrough</td></tr>
+          <tr><td><span class="key-hint">4</span></td><td>Training Plans</td></tr>
+          <tr><td><span class="key-hint">5</span></td><td>Learn / Content</td></tr>
+          <tr><td><span class="key-hint">6</span></td><td>Statistics</td></tr>
+          <tr><td><span class="key-hint">7</span></td><td>Live Streams</td></tr>
+          <tr><td><span class="key-hint">F</span></td><td>Fold</td></tr>
+          <tr><td><span class="key-hint">C</span></td><td>Call</td></tr>
+          <tr><td><span class="key-hint">R</span></td><td>Raise</td></tr>
+          <tr><td><span class="key-hint">X</span></td><td>Check</td></tr>
+          <tr><td><span class="key-hint">P</span></td><td>Push (MTT)</td></tr>
+          <tr><td><span class="key-hint">N</span></td><td>Next Hand</td></tr>
+          <tr><td><span class="key-hint">S</span></td><td>Start / Stop Drill</td></tr>
+          <tr><td><span class="key-hint">?</span></td><td>Toggle Help</td></tr>
+          <tr><td><span class="key-hint">Esc</span></td><td>Close Modal / Cancel</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Board Picker Modal -->
+<div id="modal-board-picker" class="modal-overlay hidden">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header">
+      <span class="modal-title">Select Board</span>
+      <button class="modal-close" data-close="modal-board-picker">&times;</button>
+    </div>
+    <div class="modal-body" style="padding:16px;">
+      <!-- Selected cards display -->
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+        <div id="bp-selected-cards" class="bp-selected-cards"></div>
+        <div style="margin-left:auto; display:flex; gap:4px;">
+          <button class="btn btn-xs btn-dim" id="bp-clear" style="font-size:9px;">CLEAR</button>
+          <button class="btn btn-xs btn-dim" id="bp-random" style="font-size:9px;">RANDOM</button>
+        </div>
+      </div>
+      <!-- Street labels -->
+      <div class="bp-street-labels" id="bp-street-labels">
+        <span style="color:var(--accent)">FLOP (pick 3)</span>
+        <span style="margin-left:12px;color:var(--text-dim)">TURN (+1)</span>
+        <span style="margin-left:12px;color:var(--text-dim)">RIVER (+1)</span>
+      </div>
+      <!-- 4x13 Card grid -->
+      <div id="bp-card-grid" class="bp-card-grid"></div>
+      <!-- Preset boards -->
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border-dim);">
+        <div style="font-size:9px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:8px;">Preset Boards</div>
+        <div class="toggle-group" id="bp-texture" style="margin-bottom:10px;">
+          <div class="toggle-option active" data-value="dry_rainbow">Dry</div>
+          <div class="toggle-option" data-value="dry_twotone">Dry 2T</div>
+          <div class="toggle-option" data-value="wet_rainbow">Wet</div>
+          <div class="toggle-option" data-value="wet_twotone">Wet 2T</div>
+          <div class="toggle-option" data-value="monotone">Mono</div>
+          <div class="toggle-option" data-value="paired_dry">Paired</div>
+          <div class="toggle-option" data-value="highly_connected">Bway</div>
+        </div>
+        <div id="bp-preset-boards" class="bp-preset-boards"></div>
+      </div>
+      <!-- Confirm button -->
+      <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border-dim); display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-xs btn-dim" id="bp-cancel" style="font-size:10px; padding:6px 16px;">CANCEL</button>
+        <button class="btn btn-xs" id="bp-confirm" style="font-size:10px; padding:6px 16px; background:var(--accent); color:#000; font-weight:700;">CONFIRM</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script src="js/utils/helpers.js"></script>
+<script src="js/utils/storage.js"></script>
+<script src="js/utils/keyboard.js"></script>
+<script src="js/utils/env.js"></script>
+<script src="js/state.js"></script>
+<script src="js/data/hand-constants.js"></script>
+<script src="js/data/preflop-ranges.js"></script>
+<script src="js/data/preflop-solutions.js"></script>
+<script src="js/data/push-fold-charts.js"></script>
+<script src="js/data/postflop-strategy.js"></script>
+<script src="js/data/postflop-solutions.js"></script>
+<script src="js/data/postflop-solutions-srp.js"></script>
+<script src="js/data/postflop-solution-index.js"></script>
+<script src="js/data/postflop-matchups.js"></script>
+<script src="js/data/board-categories.js"></script>
+<script src="js/data/tournament-structures.js"></script>
+<script src="js/engine/deck.js"></script>
+<script src="js/engine/hand-evaluator.js"></script>
+<script src="js/engine/range-filter.js"></script>
+<script src="js/engine/icm.js"></script>
+<script src="js/engine/scoring.js"></script>
+<script src="js/engine/scenario-generator.js"></script>
+<script src="js/engine/drill-engine.js"></script>
+<script src="js/engine/preflop-drill.js"></script>
+<script src="js/engine/postflop-drill.js"></script>
+<script src="js/engine/postflop-lookup.js"></script>
+<script src="js/engine/tournament-drill.js"></script>
+<script src="js/engine/hand-playthrough.js"></script>
+<script src="js/training/weakness-analyzer.js"></script>
+<script src="js/training/plan-templates.js"></script>
+<script src="js/training/plan-engine.js"></script>
+<script src="js/analytics/tracker.js"></script>
+<script src="js/analytics/aggregator.js"></script>
+<script src="js/analytics/dashboard.js"></script>
+<script src="js/data/content-catalog.js"></script>
+<script src="js/content/content-engine.js"></script>
+<script src="js/content/player-profile.js"></script>
+<script src="js/content/learn-view.js"></script>
+<script src="js/content/profile-view.js"></script>
+<script src="js/data/tournament-catalog.js"></script>
+<script src="js/streaming/stream-view.js"></script>
+<script src="js/ai/groq-client.js"></script>
+<script src="js/ai/prompt-builder.js"></script>
+<script src="js/ai/insight-panel.js"></script>
+<script src="js/ui/panels.js"></script>
+<script src="js/ui/nav.js"></script>
+<script src="js/ui/hand-matrix.js"></script>
+<script src="js/ui/board-display.js"></script>
+<script src="js/ui/hud.js"></script>
+<script src="js/ui/toast.js"></script>
+<script src="js/ui/modal.js"></script>
+<script src="js/ui/charts.js"></script>
+<script src="js/ui/sounds.js"></script>
+<script src="js/ui/boot.js"></script>
+<script src="js/solver/solver-cache.js"></script>
+<script src="js/solver/solver-api.js"></script>
+<script src="js/solver/preflop-solver-cache.js"></script>
+<script src="js/solver/preflop-solver-api.js"></script>
+<script src="js/app.js"></script>
+
+<!-- PiP overlay for floating stream mini-player -->
+<div id="pip-overlay" class="hidden">
+  <div class="pip-header">
+    <span class="pip-title">STREAM</span>
+    <button class="pip-restore" id="pip-restore-btn" title="Back to Stream tab">&#8599; TAB</button>
+    <button class="pip-close" id="pip-close-btn">&times;</button>
+  </div>
+  <div class="pip-content" id="pip-content"></div>
+</div>
+
+</body>
+</html>

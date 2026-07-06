@@ -1,0 +1,2 @@
+gtoterminal/js/data/**/*.js filter=lfs diff=lfs merge=lfs -text
+gtoterminal/js/data/**/*.json filter=lfs diff=lfs merge=lfs -text

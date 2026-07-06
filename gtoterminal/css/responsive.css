@@ -1,0 +1,581 @@
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE LAYOUT — GTOTerminal
+   Breakpoints: 1024px (tablet), 768px (mobile), 480px (small)
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── TABLET: max-width 1024px ─── */
+@media (max-width: 1024px) {
+
+  /* Nav bar: tighter */
+  #nav-bar .logo {
+    font-size: 13px;
+    margin-right: 12px;
+  }
+
+  .nav-tab {
+    padding: 0 10px;
+    font-size: 10px;
+  }
+
+  .nav-tab .tab-key {
+    display: none;
+  }
+
+  /* 2-panel views: filters left, matrix+details right */
+  #view-explore {
+    grid-template-columns: 30% 70% !important;
+    overflow-y: auto !important;
+  }
+
+  #view-drill {
+    grid-template-columns: 40% 60% !important;
+    overflow-y: auto !important;
+  }
+
+  /* Playthrough: similar split to drill */
+  #view-playthrough {
+    grid-template-columns: 38% 62% !important;
+  }
+
+  /* 2-panel views: equal halves */
+  #view-plans,
+  #view-learn,
+  #view-stream {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Stats: keep 2-col grid but tighten */
+  #view-stats {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto 1fr 1fr !important;
+    overflow-y: auto !important;
+  }
+
+  /* Hand matrix: smaller text */
+  .hand-matrix td {
+    font-size: 8px;
+  }
+
+  /* Playing cards: slightly smaller */
+  .playing-card {
+    width: 44px;
+    height: 60px;
+  }
+
+  .playing-card.card-large {
+    width: 52px;
+    height: 72px;
+  }
+
+  /* Config labels tighter */
+  .config-row .form-label {
+    width: 60px;
+  }
+
+  .toggle-option {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  /* Status bar: tighter */
+  #status-bar {
+    gap: 10px;
+    padding: 0 8px;
+  }
+}
+
+
+/* ─── MOBILE: max-width 768px ─── */
+@media (max-width: 768px) {
+
+  /* Nav bar: compact */
+  #nav-bar {
+    padding: 0 8px;
+    gap: 0;
+  }
+
+  #nav-bar .logo {
+    font-size: 12px;
+    margin-right: 8px;
+  }
+
+  #nav-bar .logo span {
+    display: none;
+  }
+
+  .nav-tabs {
+    flex: 1;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-tab {
+    padding: 0 8px;
+    font-size: 9px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .nav-tab .tab-key {
+    display: none;
+  }
+
+  /* Workspace: allow vertical scroll */
+  #workspace {
+    overflow-y: auto !important;
+    overflow-x: hidden;
+  }
+
+  /* All views → single column stacked */
+  .view.active {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+    height: auto !important;
+    min-height: 100%;
+    overflow: visible !important;
+  }
+
+  /* Override ID-specific tablet rules (specificity fix) */
+  #view-explore,
+  #view-drill,
+  #view-stats {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+
+  /* Reset any panel spanning */
+  .view > .panel {
+    grid-column: auto !important;
+    min-height: 0;
+  }
+
+  /* Panels: no overflow hidden, let content determine height */
+  .panel {
+    overflow: visible;
+  }
+
+  .panel-body {
+    overflow-y: visible;
+    max-height: none;
+  }
+
+  /* Hand matrix: scrollable wrapper */
+  .hand-matrix-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hand-matrix td {
+    font-size: 7px;
+  }
+
+  /* Playing cards: compact */
+  .playing-card {
+    width: 40px;
+    height: 54px;
+  }
+
+  .playing-card .card-rank {
+    font-size: 14px;
+  }
+
+  .playing-card .card-suit {
+    font-size: 16px;
+  }
+
+  .playing-card.card-large {
+    width: 48px;
+    height: 64px;
+  }
+
+  .playing-card.card-small {
+    width: 30px;
+    height: 40px;
+  }
+
+  .board-cards .playing-card {
+    width: 38px;
+    height: 52px;
+  }
+
+  /* Action buttons: larger touch targets */
+  .action-btn {
+    min-height: 38px;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+
+  /* Config rows: stack label above control */
+  .config-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .config-row .form-label {
+    width: auto;
+  }
+
+  /* Toggle groups: allow wrapping */
+  .toggle-group {
+    flex-wrap: wrap;
+  }
+
+  .toggle-option {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  /* Checkbox chips: wrap */
+  .checkbox-group {
+    flex-wrap: wrap;
+  }
+
+  /* Data tables: allow horizontal scroll */
+  .data-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table thead,
+  .data-table tbody,
+  .data-table tr {
+    display: table;
+    width: 100%;
+    table-layout: auto;
+  }
+
+  .data-table td,
+  .data-table th {
+    font-size: 10px;
+    padding: 4px 6px;
+    white-space: nowrap;
+  }
+
+  /* Stats profile: stack vertically */
+  .profile-panel {
+    grid-column: auto !important;
+  }
+
+  .profile-top {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .profile-metrics-row {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .profile-metric {
+    min-width: 80px;
+    padding: 6px 10px;
+  }
+
+  .profile-metric-divider {
+    display: none;
+  }
+
+  .profile-metric-val {
+    font-size: 16px;
+  }
+
+  .profile-bottom {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+
+  /* Learn view */
+  .learn-topic-list {
+    max-height: none;
+  }
+
+  .learn-article-scroll {
+    max-height: none;
+  }
+
+  .learn-filters {
+    flex-wrap: wrap;
+  }
+
+  /* Status bar: compact */
+  #status-bar {
+    gap: 8px;
+    padding: 0 6px;
+    font-size: 9px;
+  }
+
+  .status-right .text-dim {
+    display: none;
+  }
+
+  .status-divider {
+    height: 10px;
+  }
+
+  /* Frequency bars: tighter labels */
+  .freq-bar-label {
+    width: 36px;
+    font-size: 9px;
+  }
+
+  .freq-bar-value {
+    width: 34px;
+    font-size: 9px;
+  }
+
+  .freq-bar-ev {
+    width: 46px;
+    font-size: 9px;
+  }
+
+  /* Modal: full width on mobile */
+  .modal {
+    width: 95%;
+    max-width: none;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  /* Canvas charts: shorter */
+  .canvas-chart {
+    height: 120px;
+  }
+
+  /* Drill session summary panel */
+  .drill-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .drill-item-actions {
+    align-self: flex-end;
+  }
+
+  /* Explore filter panel */
+  .explore-filter-group {
+    font-size: 11px;
+  }
+
+  /* Verdict/feedback panels */
+  .verdict-icon {
+    font-size: 24px;
+  }
+
+  /* Table display seats: smaller on mobile */
+  .seat-label {
+    font-size: 8px;
+  }
+
+  /* Play/Drill/Explore: remove max-height constraints on mobile */
+  .play-feedback-section,
+  .drill-feedback-section,
+  .explore-detail-section {
+    max-height: none;
+  }
+
+  .play-matrix-section,
+  .drill-matrix-section,
+  .explore-matrix-section {
+    min-height: 200px;
+  }
+
+  /* Solver: full width inputs, no side-by-side */
+  .solver-board-input {
+    flex-wrap: wrap;
+  }
+
+  .solver-hand-table {
+    font-size: 9px;
+  }
+
+  #solver-hand-table-wrap {
+    max-height: 300px;
+  }
+
+  .solver-freq-label {
+    width: 50px;
+    font-size: 9px;
+  }
+
+  /* Stream view: single column */
+  #view-stream {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stream-player-wrap {
+    padding-top: 56.25%;
+  }
+
+  .stream-catalog-scroll {
+    max-height: 200px;
+  }
+
+  .stream-schedule-list {
+    max-height: 150px;
+  }
+
+  .stream-card-desc {
+    display: none;
+  }
+}
+
+
+/* ─── SMALL MOBILE: max-width 480px ─── */
+@media (max-width: 480px) {
+
+  /* Nav tabs: even tighter */
+  .nav-tab {
+    padding: 0 6px;
+    font-size: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  #nav-bar .logo {
+    font-size: 11px;
+    margin-right: 4px;
+  }
+
+  /* Hand matrix: smallest text */
+  .hand-matrix td {
+    font-size: 6px;
+  }
+
+  /* Playing cards: smallest */
+  .playing-card {
+    width: 34px;
+    height: 46px;
+  }
+
+  .playing-card .card-rank {
+    font-size: 12px;
+  }
+
+  .playing-card .card-suit {
+    font-size: 14px;
+  }
+
+  .playing-card.card-large {
+    width: 40px;
+    height: 54px;
+  }
+
+  .playing-card.card-small {
+    width: 26px;
+    height: 34px;
+  }
+
+  .board-cards .playing-card {
+    width: 32px;
+    height: 44px;
+  }
+
+  /* Action buttons: full width */
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 42px;
+    font-size: 12px;
+  }
+
+  /* Profile metrics: 2 per row */
+  .profile-metric {
+    min-width: 70px;
+  }
+
+  .profile-metric-val {
+    font-size: 14px;
+  }
+
+  .profile-metric-lbl {
+    font-size: 7px;
+  }
+
+  /* Stat rows */
+  .stat-row {
+    font-size: 10px;
+  }
+
+  /* Status bar: minimal */
+  #status-bar {
+    gap: 6px;
+    font-size: 8px;
+  }
+
+  .status-label {
+    display: none;
+  }
+
+  /* Panel padding: tighter */
+  .panel-body {
+    padding: 8px;
+  }
+
+  .panel-header {
+    font-size: 10px;
+    padding: 0 8px;
+  }
+
+  /* Toggle groups: smaller */
+  .toggle-option {
+    padding: 4px 6px;
+    font-size: 9px;
+  }
+
+  /* Learn topic cards: tighter */
+  .learn-topic-card {
+    padding: 8px 10px;
+  }
+
+  .topic-title {
+    font-size: 11px;
+  }
+
+  .topic-summary {
+    font-size: 9px;
+  }
+
+  /* Charts */
+  .canvas-chart {
+    height: 100px;
+  }
+
+  .bar-label {
+    width: 26px;
+    font-size: 9px;
+  }
+
+  .bar-value {
+    width: 30px;
+    font-size: 9px;
+  }
+
+  /* Stream: tighter */
+  .stream-card {
+    padding: 6px 8px;
+  }
+
+  .stream-card-name {
+    font-size: 10px;
+  }
+
+  .spot-entry-label {
+    min-width: 40px;
+    font-size: 8px;
+  }
+
+  .spot-entry-input {
+    font-size: 9px;
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "preflop-solver-wasm",
+  "type": "module",
+  "description": "WASM preflop CFR+ solver for GTOTerminal",
+  "version": "0.1.0",
+  "license": "MIT",
+  "files": [
+    "preflop_solver_wasm_bg.wasm",
+    "preflop_solver_wasm.js",
+    "preflop_solver_wasm.d.ts"
+  ],
+  "main": "preflop_solver_wasm.js",
+  "types": "preflop_solver_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

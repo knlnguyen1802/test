@@ -1,0 +1,837 @@
+/* GTOTerminal — 13x13 Hand Matrix */
+
+.hand-matrix-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+.hand-matrix {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* Hide axis headers — hand names visible in each cell */
+.hand-matrix thead,
+.hand-matrix tbody th {
+  display: none;
+}
+
+.hand-matrix td {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 500;
+  padding: 0;
+  border: 1px solid var(--border-dim);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  user-select: none;
+  color: var(--text-primary);
+}
+
+.hand-matrix td:hover {
+  z-index: 1;
+  filter: brightness(1.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+/* Action-based coloring (GTO Wizard style) */
+/* Raise = green tones, Call = blue tones, Fold = dark/dim, Mixed = blended */
+.hand-matrix td.action-fold {
+  background: #111;
+  color: var(--text-dim);
+}
+
+.hand-matrix td.action-raise {
+  background: rgba(var(--range-raise), 0.45);
+  color: #fff;
+  font-weight: 600;
+}
+
+.hand-matrix td.action-call {
+  background: rgba(var(--range-call), 0.45);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Mixed: raise-heavy */
+.hand-matrix td.action-mixed-raise {
+  background: rgba(var(--range-raise), 0.28);
+  color: var(--range-raise-color);
+}
+
+/* Mixed: call-heavy */
+.hand-matrix td.action-mixed-call {
+  background: rgba(var(--range-call), 0.28);
+  color: var(--range-call-color);
+}
+
+/* Mixed: raise+call roughly even */
+.hand-matrix td.action-mixed-even {
+  background: rgba(255, 215, 0, 0.25);
+  color: var(--yellow);
+}
+
+/* Mixed: low frequency action (mostly fold with some action) */
+.hand-matrix td.action-mixed-low {
+  background: rgba(var(--accent-rgb), 0.18);
+  color: var(--accent-dim);
+}
+
+/* Initial state — cells start with freq-0 in HTML, overwritten on first matrix update */
+.hand-matrix td.freq-0 {
+  background: #111;
+  color: var(--text-dim);
+}
+
+/* Active hand highlight — brightness + white inner glow */
+.hand-matrix td.active-hand {
+  filter: brightness(1.6);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+  z-index: 2;
+}
+
+/* Pair / suited / offsuit indicators */
+.hand-matrix td.hand-pair {
+  font-style: normal;
+}
+
+/* Suited hands get a subtle top-right corner accent — no confusing dots */
+
+/* Matrix legend */
+.matrix-legend {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-dim);
+  font-size: 9px;
+  color: var(--text-dim);
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 1px;
+  border: 1px solid var(--border-dim);
+}
+
+/* ── 2-Column Layout Wrappers ── */
+.explore-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+}
+
+.explore-matrix-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.explore-matrix-section .panel-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.explore-matrix-section .hand-matrix-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.explore-detail-section {
+  border-top: 1px solid var(--border-dim);
+  flex-shrink: 0;
+  max-height: 35%;
+  overflow-y: auto;
+}
+
+.drill-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+}
+
+.drill-matrix-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.drill-matrix-section .panel-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#drill-matrix-area,
+#drill-board-area,
+#drill-pushfold-matrix {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.drill-matrix-section .hand-matrix-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.drill-feedback-section {
+  border-top: 1px solid var(--border-dim);
+  flex-shrink: 0;
+  max-height: 35%;
+  overflow-y: auto;
+}
+
+/* ── Range Summary Bar ── */
+.range-summary-bar {
+  display: flex;
+  height: 28px;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+  border: 1px solid var(--border-dim);
+  font-family: var(--font-mono);
+}
+
+.summary-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 0 6px;
+  transition: width 0.3s ease;
+}
+
+.summary-segment.seg-raise {
+  background: rgba(var(--range-raise), 0.35);
+  color: var(--range-raise-color);
+}
+
+.summary-segment.seg-call {
+  background: rgba(var(--range-call), 0.35);
+  color: var(--range-call-color);
+}
+
+.summary-segment.seg-fold {
+  background: #1a1a1a;
+  color: var(--text-dim);
+}
+
+/* ── Combo Grid ── */
+.combo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.combo-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-dim);
+  border-radius: 2px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+
+.combo-chip-cards {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.combo-mini-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+/* ── Position Context Bar ── */
+.position-context-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.position-chip {
+  padding: 3px 8px;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border-dim);
+  border-radius: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.position-chip.hero {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
+.position-chip.villain {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(255, 67, 61, 0.1);
+}
+
+/* ── Equity / Stats Row ── */
+.feedback-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.feedback-stat-card {
+  padding: 6px 10px;
+  border: 1px solid var(--border-dim);
+  border-radius: 2px;
+  text-align: center;
+}
+
+.feedback-stat-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.feedback-stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+
+/* ── Play View Layout (mirrors drill) ── */
+.play-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+}
+
+.play-matrix-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.play-matrix-section .panel-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+#play-matrix-area,
+#play-board-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.play-matrix-section .hand-matrix-container {
+  flex: 1;
+  min-height: 0;
+}
+
+.play-feedback-section {
+  border-top: 1px solid var(--border-dim);
+  flex-shrink: 0;
+  max-height: 35%;
+  overflow-y: auto;
+}
+
+.play-feedback-section .panel-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* ── Solver Results Panel ── */
+#explore-solver-results {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#explore-solver-results .panel-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* ── Solver UI ── */
+.solver-input {
+  width: 100%;
+  background: var(--bg-input, #111);
+  border: 1px solid var(--border-dim);
+  border-radius: 2px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.solver-input:focus {
+  border-color: var(--accent);
+}
+
+.solver-input::placeholder {
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+.solver-board-input {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.solver-board-input .solver-input {
+  flex: 1;
+}
+
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 2px;
+}
+
+.btn-dim {
+  background: transparent;
+  border: 1px solid var(--border-dim);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.btn-dim:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-secondary);
+}
+
+.solver-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #111;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border-dim);
+}
+
+.solver-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.solver-progress-text {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  text-align: center;
+  font-family: var(--font-mono);
+}
+
+/* Solver hand table */
+.solver-hand-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+
+.solver-hand-table th {
+  text-align: left;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border-dim);
+  position: sticky;
+  top: 0;
+  background: var(--bg-panel, #0a0a0a);
+}
+
+.solver-hand-table td {
+  padding: 3px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+}
+
+.solver-hand-table tr:hover td {
+  background: rgba(var(--accent-rgb), 0.05);
+}
+
+/* Solver strategy mini-bar in table */
+.solver-strat-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 1px;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.solver-strat-bar > div {
+  height: 100%;
+}
+
+/* Solver action buttons */
+.solver-action-btn {
+  padding: 6px 14px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border-dim);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.solver-action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.solver-action-btn.active {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.12);
+  color: var(--accent);
+}
+
+/* Solver strategy frequency bars */
+.solver-freq-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.solver-freq-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  width: 65px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.solver-freq-track {
+  flex: 1;
+  height: 14px;
+  background: #111;
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid var(--border-dim);
+}
+
+.solver-freq-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.solver-freq-value {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  width: 40px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Solver filter toggle groups (wrapping) */
+#solver-depth,
+#solver-matchup,
+#solver-texture,
+#solver-board-select {
+  flex-wrap: wrap;
+  gap: 1px;
+  overflow: visible;
+}
+
+#solver-matchup .toggle-option,
+#solver-texture .toggle-option {
+  padding: 4px 8px;
+  font-size: 9px;
+}
+
+#solver-board-select .toggle-option {
+  padding: 4px 10px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+}
+
+/* Explore mode toggle — compact */
+#explore-mode {
+  flex-wrap: wrap;
+  gap: 1px;
+}
+
+#explore-mode .toggle-option {
+  padding: 5px 10px;
+  font-size: 9px;
+}
+
+/* Board display in matrix header (postflop mode) */
+#explore-board-display {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+#explore-board-display .playing-card {
+  width: 24px;
+  height: 32px;
+  min-width: 24px;
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+#explore-board-display .playing-card .card-rank {
+  font-size: 11px;
+}
+
+#explore-board-display .playing-card .card-suit {
+  font-size: 8px;
+  margin-top: 0;
+}
+
+/* ── Board Picker Modal ── */
+.bp-card-grid {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 2px;
+}
+
+.bp-card-grid .bp-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  padding: 6px 0;
+  border: 1px solid var(--border-dim);
+  border-radius: 2px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s;
+  background: #0a0a0a;
+}
+
+.bp-card-grid .bp-card:hover {
+  border-color: var(--accent);
+  filter: brightness(1.4);
+}
+
+.bp-card-grid .bp-card.bp-selected {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.2);
+  box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.3);
+}
+
+.bp-card-grid .bp-suit-s { color: #e0e0e0; }
+.bp-card-grid .bp-suit-h { color: #ff433d; }
+.bp-card-grid .bp-suit-d { color: #0068ff; }
+.bp-card-grid .bp-suit-c { color: #4af6c3; }
+
+.bp-street-labels {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.bp-street-label.bp-optional {
+  opacity: 0.5;
+}
+
+/* Selected cards in modal */
+.bp-selected-cards {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  min-height: 44px;
+}
+
+.bp-selected-cards .playing-card {
+  width: 36px;
+  height: 48px;
+  min-width: 36px;
+}
+
+.bp-selected-cards .playing-card .card-rank { font-size: 16px; }
+.bp-selected-cards .playing-card .card-suit { font-size: 12px; margin-top: 0; }
+
+.bp-selected-cards .bp-street-sep {
+  width: 1px;
+  height: 30px;
+  background: var(--border-dim);
+  margin: 0 4px;
+}
+
+.bp-selected-cards .bp-placeholder {
+  width: 36px;
+  height: 48px;
+  border: 1px dashed var(--border-dim);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.4;
+}
+
+/* Preset boards in modal */
+.bp-preset-boards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bp-preset-board {
+  display: flex;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-dim);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: #0a0a0a;
+}
+
+.bp-preset-board:hover {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
+.bp-preset-board .playing-card {
+  width: 24px;
+  height: 32px;
+  min-width: 24px;
+  box-shadow: none;
+  border-radius: 2px;
+}
+
+.bp-preset-board .playing-card .card-rank { font-size: 11px; }
+.bp-preset-board .playing-card .card-suit { font-size: 8px; margin-top: 0; }
+
+/* Board preview in filter panel */
+.solver-selected-cards {
+  display: flex;
+  gap: 3px;
+  min-height: 28px;
+  align-items: center;
+}
+
+.solver-selected-cards .playing-card {
+  width: 28px;
+  height: 36px;
+  min-width: 28px;
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+.solver-selected-cards .playing-card .card-rank { font-size: 12px; }
+.solver-selected-cards .playing-card .card-suit { font-size: 9px; margin-top: 0; }
+
+.solver-selected-cards .board-street-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border-dim);
+  margin: 0 2px;
+}
+
+/* Texture presets in modal — wrapping */
+#bp-texture {
+  flex-wrap: wrap;
+  gap: 1px;
+  overflow: visible;
+}
+
+#bp-texture .toggle-option {
+  padding: 4px 10px;
+  font-size: 9px;
+}
+
+/* Solver loading spinner */
+.solver-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border-dim);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: solver-spin 0.8s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes solver-spin {
+  to { transform: rotate(360deg); }
+}
+
+#solver-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 0;
+}
