@@ -35,3 +35,8 @@ graph BT
     SCR --> |build| POSTDB
     DATA -----> |Lookup API| TOOL
 ```
+
+## Imporant files
+| Files     | Description |
+|-----------|-------------|
+|/scripts/precompute-preflop.js| Script to gather input and run solver |
