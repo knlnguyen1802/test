@@ -43,6 +43,9 @@ pub struct SpotConfig {
     /// Number of opponents yet to act (for RFI fold equity calculation).
     /// UTG=5, MP=4, CO=3, BTN=2, SB=1. Default=3 (average position).
     pub num_opponents: u32,
+    /// Blind already posted by hero (0.0 = non-blind, 0.5 = SB, 1.0 = BB).
+    /// Used to compute the correct incremental call/raise cost.
+    pub hero_blind: f32,
     /// Optional overrides (set by precompute script for position-specific tuning)
     pub call_eq_override: Option<f32>,
     pub raise_eq_override: Option<f32>,
@@ -55,6 +58,7 @@ impl SpotConfig {
             stack_depth: stack_bb,
             action_context: context,
             num_opponents: 3,
+            hero_blind: 0.0,
             call_eq_override: None,
             raise_eq_override: None,
             villain_fold_override: None,
@@ -206,20 +210,26 @@ impl SpotPayoffs {
                     (villain_fold, villain_4bet)
                 };
 
+                // Blind adjustment: hero's posted blind reduces the incremental cost
+                // to call/raise. BB (1.0 BB) facing 2.5 open only needs to add 1.5 BB,
+                // not 2.5 BB. The call_pot is also reduced because the blind is already
+                // part of the pot before the decision point.
+                let blind = config.hero_blind;
+
                 SpotPayoffs {
                     fold_ev: 0.0,
-                    call_cost: open_size,
-                    call_pot: 1.5 + open_size * 2.0,
+                    call_cost: open_size - blind,
+                    call_pot: 1.5 + open_size * 2.0 - blind,
                     call_eq_realization: config.call_eq_override
                         .unwrap_or_else(|| scaled_eq_real(0.75, sc.eq_real_bonus)),
-                    raise_cost: three_bet_size,
-                    raise_fold_pot: 1.5 + open_size,
+                    raise_cost: three_bet_size - blind,
+                    raise_fold_pot: 1.5 + open_size - blind,
                     villain_fold_freq: vf,
-                    raise_call_pot: 1.5 + three_bet_size * 2.0,
+                    raise_call_pot: 1.5 + three_bet_size * 2.0 - blind,
                     raise_eq_realization: config.raise_eq_override
                         .unwrap_or_else(|| scaled_eq_real(0.78, sc.eq_real_bonus)),
                     villain_reraise_freq: v4,
-                    reraise_loss: three_bet_size,
+                    reraise_loss: three_bet_size - blind,
                 }
             }
             ActionContext::Vs3Bet => {

@@ -58,6 +58,12 @@ impl PreflopSolver {
             config = config.with_opponents(n as u32);
         }
 
+        // Hero's posted blind (0.0 = non-blind, 0.5 = SB, 1.0 = BB).
+        // Used to compute correct incremental call/raise cost.
+        if let Some(v) = parsed["heroBlind"].as_f64() {
+            config.hero_blind = v as f32;
+        }
+
         // Position-specific overrides for equity realization and villain fold frequency
         if let Some(v) = parsed["callEqRealization"].as_f64() {
             config.call_eq_override = Some(v as f32);

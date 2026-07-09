@@ -221,6 +221,9 @@ const VS_4BET_SPOTS = [
 
 const POS_ORDER = { SB: 0, BB: 1, UTG: 2, MP: 3, CO: 4, BTN: 5 };
 
+// Map position to blind already posted (BB)
+const POS_BLIND = { UTG: 0, MP: 0, CO: 0, BTN: 0, SB: 0.5, BB: 1.0 };
+
 // Stack depth multiplier for villain fold frequencies (opponents fold less at short stacks)
 // Aligned with Rust-side fold_freq_mult to avoid double-penalizing
 function stackFoldMult(stack) {
@@ -437,6 +440,7 @@ async function generateAll() {
         const config = {
           stackDepth: stackBB,
           actionContext: 'vs_raise',
+          heroBlind: POS_BLIND[spot.hero] ?? 0,
           callEqRealization: overrides.callEqRealization,
           raiseEqRealization: overrides.raiseEqRealization,
           villainFoldFreq: overrides.villainFoldFreq,
