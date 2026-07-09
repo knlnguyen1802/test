@@ -1,0 +1,614 @@
+{
+    "UTG": {
+        "rfi": {
+            "raise": [
+            ]
+        },
+        "vs_raise": {
+            "MP" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_3bet": {
+            "MP" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_4bet": {
+            "MP" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            }
+        }
+    },
+    "MP": {
+        "rfi": {
+            "raise": [
+            ]
+        },
+        "vs_raise": {
+            "UTG" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_3bet": {
+            "UTG" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_4bet": {
+            "UTG" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            }
+        }
+    },
+    "CO": {
+        "rfi": {
+            "raise": [
+            ]
+        },
+        "vs_raise": {
+            "UTG" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_3bet": {
+            "UTG" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_4bet": {
+            "UTG" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            }
+        }
+    },
+    "BTN": {
+        "rfi": {
+            "raise": [
+            ]
+        },
+        "vs_raise": {
+            "UTG" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_3bet": {
+            "UTG" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_4bet": {
+            "UTG" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            }
+        }
+    },
+    "SB": {
+        "rfi": {
+            "raise": [
+            ]
+        },
+        "vs_raise": {
+            "UTG" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_3bet": {
+            "UTG" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_4bet": {
+            "UTG" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "BB" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            }
+        }
+    },
+    "BB": {
+        "rfi": {
+            "raise": [
+            ]
+        },
+        "vs_raise": {
+            "UTG" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_3bet": {
+            "UTG" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "raise": [
+                ]
+            }
+        },
+        "vs_4bet": {
+            "UTG" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "MP" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "CO" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "BTN" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            },
+            "SB" : {
+                "call": [
+                ],
+                "allin": [
+                ]
+            }
+        }
+    }
+}
