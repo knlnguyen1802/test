@@ -2,8 +2,8 @@
 
 | Directory | Description |
 |-----------|-------------|
-| **Postflop solver** | Chứa thuật toán solver |
-| **GTO terminal** | Sử dụng thuật toán solver, nhận input, solve, chứa code extract data từ solution để sử dụng, chứa lookup API cho game client query data |
+| **Postflop solver** | Contains core algorithm |
+| **GTO terminal** | Solve specific spots, extract data from solving pipeline and save into solutions to reuse. Python part: lookup API for game tool |
 
 In the below graph, arrow direction specify data flow
 
@@ -14,7 +14,7 @@ graph BT
     end
 
     subgraph TERMINAL[Gtoterminal]
-        CONFIG[Config<br>1. Gametree]
+        CONFIG[Config<br>1. Gametree<br>2. Selective boards]
         SCR[postflop script]
         SOLVER[Solver]
     end
