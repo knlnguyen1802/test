@@ -41,7 +41,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { execSync, fork, spawn } from 'child_process';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join } from 'path';
-import { LINE_BET_SIZES, DEPTH_CONFIGS, MATCHUPS, FLOP_BOARDS } from './postflop_config/index.mjs';
+import { LINE_BET_SIZES, DEPTH_CONFIGS, FLOP_BOARDS } from './postflop_config/index.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -71,8 +71,6 @@ const FORCE = hasArg('force');
 // (River always requires turn, so --no-turn is ignored while river is enabled.)
 const EXTRACT_RIVER = !hasArg('no-river');
 const EXTRACT_TURN = (!hasArg('no-turn') || EXTRACT_RIVER);
-// --builtin-ranges: ignore preflop-derived ranges and use the hardcoded MATCHUPS.
-const USE_BUILTIN_RANGES = hasArg('builtin-ranges');
 
 // --engine: which solver engine to use.
 //   auto   (default) → native binary if it's built, otherwise WASM fallback
@@ -222,49 +220,38 @@ function setHandWeight(range, hand, weight) {
 }
 
 // ---------------------------------------------------------------------------
-// Position matchup definitions — imported from postflop_config/matchups.mjs.
-// MATCHUPS is mutated in place below with preflop-derived range overrides.
 // ---------------------------------------------------------------------------
-
+// Input ranges
 // ---------------------------------------------------------------------------
-// Preflop-derived range override
-// If js/data/postflop-input-ranges.json exists (produced by
-// scripts/preflop-to-postflop-ranges.mjs), use those ranges so the postflop
-// solve is consistent with the preflop solution. Pass --builtin-ranges to skip.
-// The parent process reads MATCHUPS and passes the range strings to children,
-// so only the parent needs the override.
+// Ranges come exclusively from js/data/postflop-input-ranges.json, produced by
+// scripts/preflop-to-postflop-ranges.mjs and keyed by bet level (srp/3bet/4bet).
+// There are no built-in defaults: a matchup with no derived range is skipped.
+// The legacy 100bb case reuses the srp ranges. Only the parent needs these; the
+// child receives the range strings directly in its config.
 // ---------------------------------------------------------------------------
-if (!IS_CHILD && !USE_BUILTIN_RANGES) {
+const RANGE_CASE = DEPTH === '100bb' ? 'srp' : DEPTH;
+let MATCHUP_RANGES = {};
+if (!IS_CHILD) {
   const rangesPath = join(PROJECT_ROOT, 'js', 'data', 'postflop-input-ranges.json');
-  if (existsSync(rangesPath)) {
-    try {
-      const parsed = JSON.parse(readFileSync(rangesPath, 'utf-8'));
-      // Per-case ranges (srp/3bet/4bet) live under parsed.cases[DEPTH]; the
-      // legacy single-range format lives under parsed.matchups.
-      const overrides = (parsed.cases && parsed.cases[DEPTH]) || parsed.matchups || {};
-      let applied = 0;
-      let backedUp = 0;
-      for (const [key, val] of Object.entries(overrides)) {
-        if (!val) continue;
-        const builtin = MATCHUPS[key] || {};
-        // Keep the built-in default range as backup for any empty derived side
-        // (the preflop solver 3bets instead of flatting, so the derived IP
-        // flat-call range is often empty — do NOT replace it with 3bet hands).
-        const oop = (val.oop && val.oop.trim()) ? val.oop : builtin.oop;
-        const ip = (val.ip && val.ip.trim()) ? val.ip : builtin.ip;
-        if (!oop || !ip) continue; // nothing derived and no built-in — leave as-is
-        if (!val.oop || !val.oop.trim() || !val.ip || !val.ip.trim()) backedUp++;
-        MATCHUPS[key] = { oop, ip };
-        applied++;
-      }
-      if (applied > 0) {
-        const backupNote = backedUp > 0 ? ` (${backedUp} kept built-in default for an empty side)` : '';
-        const caseNote = (parsed.cases && parsed.cases[DEPTH]) ? ` case=${DEPTH}` : '';
-        console.log(`[precompute] Using preflop-derived ranges (${parsed.source || 'postflop-input-ranges.json'}${caseNote}) — ${applied} matchups${backupNote}. Use --builtin-ranges to override.`);
-      }
-    } catch (e) {
-      console.log(`[precompute] WARNING: failed to load postflop-input-ranges.json (${e.message}). Using built-in ranges.`);
+  if (!existsSync(rangesPath)) {
+    console.error(`[precompute] Missing ${rangesPath}.\n`
+      + `[precompute] Generate it first: node scripts/preflop-to-postflop-ranges.mjs`);
+    process.exit(1);
+  }
+  try {
+    const parsed = JSON.parse(readFileSync(rangesPath, 'utf-8'));
+    MATCHUP_RANGES = (parsed.cases && parsed.cases[RANGE_CASE]) || {};
+    const n = Object.keys(MATCHUP_RANGES).length;
+    if (n === 0) {
+      console.error(`[precompute] No ranges for case '${RANGE_CASE}' in postflop-input-ranges.json. `
+        + `Re-run scripts/preflop-to-postflop-ranges.mjs.`);
+      process.exit(1);
     }
+    console.log(`[precompute] Ranges: ${parsed.source || 'postflop-input-ranges.json'} `
+      + `case=${RANGE_CASE} (${n} matchups)`);
+  } catch (e) {
+    console.error(`[precompute] Failed to load postflop-input-ranges.json: ${e.message}`);
+    process.exit(1);
   }
 }
 
@@ -956,7 +943,7 @@ async function main() {
   const turnSolutions = { ...existingTurnSolutions };
   const matchupKeys = FILTER_MATCHUP
     ? [FILTER_MATCHUP]
-    : Object.keys(MATCHUPS);
+    : Object.keys(MATCHUP_RANGES);
   const boards = FILTER_BOARD
     ? FLOP_BOARDS.filter(b => b.label === FILTER_BOARD)
     : FLOP_BOARDS;
@@ -981,19 +968,12 @@ async function main() {
   console.log('');
 
   for (const matchupKey of matchupKeys) {
-    if (!MATCHUPS[matchupKey]) {
-      console.log(`[precompute] Unknown matchup: ${matchupKey}`);
-      continue;
-    }
-    const matchup = MATCHUPS[matchupKey];
-    // Derive-only matchups (cold-caller pairs) ship with empty built-in ranges;
-    // the preflop bridge fills them for 3bet/4bet but leaves srp empty (the
-    // defender 3bets rather than flats). Skip a matchup that has no usable range
-    // for either seat instead of feeding the solver an empty range.
-    if (!matchup.oop || !matchup.oop.trim() || !matchup.ip || !matchup.ip.trim()) {
+    const matchup = MATCHUP_RANGES[matchupKey];
+    // No derived range for this matchup at this bet level (e.g. an impossible
+    // aggressor/level combo the bridge skipped). Skip instead of solving empty.
+    if (!matchup || !matchup.oop || !matchup.oop.trim() || !matchup.ip || !matchup.ip.trim()) {
       skipped += boards.length;
-      console.log(`[precompute] ${matchupKey} — no ranges for case '${DEPTH}' `
-        + `(derive-only; run scripts/preflop-to-postflop-ranges.mjs, or use a 3bet/4bet case). Skipping.`);
+      console.log(`[precompute] ${matchupKey} — no derived range for case '${RANGE_CASE}'. Skipping.`);
       continue;
     }
     if (!solutions[matchupKey]) solutions[matchupKey] = {};
@@ -1087,7 +1067,7 @@ async function main() {
   // Write index (per-depth)
   const indexData = {
     depth: DEPTH,
-    matchups: Object.keys(MATCHUPS),
+    matchups: Object.keys(MATCHUP_RANGES),
     boards: FLOP_BOARDS.map(b => ({ label: b.label, board: b.board.join(''), texture: b.texture })),
     settings: { pot: STARTING_POT, stack: EFFECTIVE_STACK, maxIterations: MAX_ITERATIONS, targetExploitability: TARGET_EXPLOIT_PCT, betSizes: BET_SIZES },
     generated: new Date().toISOString()

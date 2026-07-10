@@ -1,184 +1,76 @@
 // ============================================================================
-// Postflop position-matchup definitions
+// Postflop position-matchup metadata (positions only — NO hardcoded ranges)
 // ============================================================================
-// Built-in OOP/IP preflop ranges for each position matchup, used as the input
-// hand space for the postflop precompute solver. Split out of
-// scripts/precompute-postflop.mjs for easier maintenance.
+// Input hand ranges are NOT stored here. They are derived from the preflop
+// lookup table (preflop-lookup/preflop-ranges.js) by
+// scripts/preflop-to-postflop-ranges.mjs, which writes
+// js/data/postflop-input-ranges.json keyed by BET LEVEL (srp / 3bet / 4bet).
 //
-// These are the built-in DEFAULTS. At runtime the precompute script overrides
-// them with preflop-derived ranges from js/data/postflop-input-ranges.json
-// (unless --builtin-ranges is passed), keeping any built-in side that the
-// derived data leaves empty.
+// A matchup key is `AGG_CALLER`: the FIRST position is the AGGRESSOR (the last
+// raiser), the SECOND is the CALLER. Every pairing is listed in BOTH directions
+// (e.g. SB_BB and BB_SB) so the aggressor is explicit in the key — nothing is
+// computed. A given key only carries data at the levels where that spot exists;
+// impossible ones (e.g. BB as the aggressor in a single-raised pot) resolve to
+// an empty lookup and are skipped by the bridge.
 //
-// Cold-caller pairs (opener vs a non-blind caller) are DERIVE-ONLY: ranges are
-// left empty and filled from the preflop bridge for the 3bet/4bet cases. In a
-// single-raised pot the defender 3bets rather than flat-calls, so the srp range
-// stays empty and main() skips the spot.
+// Which seat is OOP / IP postflop does NOT depend on the aggressor. It follows
+// the postflop action order (POSTFLOP_ORDER): blinds act first postflop, button
+// last. E.g. BTN vs BB — postflop the BB is OOP and the BTN is IP. Use
+// postflopPosition() to resolve it.
 // ============================================================================
 
-export const MATCHUPS = {
-  SB_vs_BB: {
-    oop: 'AA,KK,QQ,JJ,TT,99,88,77,66,55,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A6s,A5s,A4s,A3s,A2s,' +
-         'AKo,AQo,AJo,ATo,A9o,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,K6s,K5s,' +
-         'KQo,KJo,KTo,' +
-         'QJs,QTs,Q9s,Q8s,Q7s,' +
-         'QJo,QTo,' +
-         'JTs,J9s,J8s,J7s,' +
-         'JTo,' +
-         'T9s,T8s,T7s,' +
-         '98s,97s,96s,' +
-         '87s,86s,85s,' +
-         '76s,75s,74s,' +
-         '65s,64s,63s,' +
-         '54s,53s,' +
-         '43s',
-    ip:  'AA,KK,QQ,JJ,TT,99,88,77,66,55,44,33,22,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A6s,A5s,A4s,A3s,A2s,' +
-         'AKo,AQo,AJo,ATo,A9o,A8o,A7o,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,K6s,K5s,K4s,' +
-         'KQo,KJo,KTo,K9o,' +
-         'QJs,QTs,Q9s,Q8s,Q7s,Q6s,' +
-         'QJo,QTo,Q9o,' +
-         'JTs,J9s,J8s,J7s,J6s,' +
-         'JTo,J9o,' +
-         'T9s,T8s,T7s,T6s,' +
-         'T9o,' +
-         '98s,97s,96s,95s,' +
-         '87s,86s,85s,84s,' +
-         '76s,75s,74s,' +
-         '65s,64s,63s,' +
-         '54s,53s,52s,' +
-         '43s,42s,32s'
+// Postflop action order — the earlier a seat is here, the sooner it acts
+// postflop, i.e. the more out of position it is. (SB acts first, BTN last.)
+export const POSTFLOP_ORDER = ['SB', 'BB', 'UTG', 'MP', 'CO', 'BTN'];
+
+// Resolve which of two seats is OOP (acts first postflop) vs IP (acts last).
+export function postflopPosition(a, b) {
+  const ia = POSTFLOP_ORDER.indexOf(a);
+  const ib = POSTFLOP_ORDER.indexOf(b);
+  return ia <= ib ? { oop: a, ip: b } : { oop: b, ip: a };
+}
+
+// For each bet level, where the AGGRESSOR's raise range and the CALLER's call
+// range live in the preflop lookup. Given a matchup key `AGG_CALLER` split into
+// [agg, caller], `keyBy` builds the lookup key:
+//   'agg'        → agg                (rfi is keyed by a single seat)
+//   'agg_caller' → `${agg}_${caller}`
+//   'caller_agg' → `${caller}_${agg}`
+// The preflop tables are keyed by the pot's first raiser. At srp/4bet the
+// aggressor IS that first raiser, so the key is agg_caller. At 3bet the caller
+// was the first raiser (the aggressor just 3bet), so the key flips to caller_agg.
+export const BET_LEVELS = {
+  srp: {
+    agg:    { table: 'rfi',      keyBy: 'agg',        take: 'raise' },
+    caller: { table: 'vs_raise', keyBy: 'agg_caller', take: 'call'  },
   },
-  BTN_vs_BB: {
-    oop: 'AA,KK,QQ,JJ,TT,99,88,77,66,55,44,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A6s,A5s,A4s,A3s,A2s,' +
-         'AKo,AQo,AJo,ATo,A9o,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,K6s,K5s,' +
-         'KQo,KJo,KTo,' +
-         'QJs,QTs,Q9s,Q8s,Q7s,' +
-         'QJo,QTo,' +
-         'JTs,J9s,J8s,' +
-         'JTo,' +
-         'T9s,T8s,T7s,' +
-         '98s,97s,' +
-         '87s,86s,' +
-         '76s,75s,' +
-         '65s,64s,' +
-         '54s,53s,' +
-         '43s',
-    ip:  'AA,KK,QQ,JJ,TT,99,88,77,66,55,44,33,22,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A6s,A5s,A4s,A3s,A2s,' +
-         'AKo,AQo,AJo,ATo,A9o,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,K6s,K5s,' +
-         'KQo,KJo,KTo,K9o,' +
-         'QJs,QTs,Q9s,Q8s,Q7s,' +
-         'QJo,QTo,Q9o,' +
-         'JTs,J9s,J8s,J7s,' +
-         'JTo,J9o,' +
-         'T9s,T8s,T7s,' +
-         'T9o,' +
-         '98s,97s,96s,' +
-         '87s,86s,85s,' +
-         '76s,75s,74s,' +
-         '65s,64s,' +
-         '54s,53s,' +
-         '43s'
+  '3bet': {
+    agg:    { table: 'vs_raise', keyBy: 'caller_agg', take: 'raise' },
+    caller: { table: 'vs_3bet',  keyBy: 'caller_agg', take: 'call'  },
   },
-  CO_vs_BB: {
-    oop: 'AA,KK,QQ,JJ,TT,99,88,77,66,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A5s,A4s,' +
-         'AKo,AQo,AJo,ATo,' +
-         'KQs,KJs,KTs,K9s,K8s,' +
-         'KQo,KJo,' +
-         'QJs,QTs,Q9s,Q8s,' +
-         'QJo,' +
-         'JTs,J9s,J8s,' +
-         'T9s,T8s,' +
-         '98s,97s,' +
-         '87s,86s,' +
-         '76s,75s,' +
-         '65s,64s,' +
-         '54s',
-    ip:  'AA,KK,QQ,JJ,TT,99,88,77,66,55,44,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A5s,A4s,A3s,' +
-         'AKo,AQo,AJo,ATo,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,' +
-         'KQo,KJo,KTo,' +
-         'QJs,QTs,Q9s,Q8s,Q7s,' +
-         'QJo,QTo,' +
-         'JTs,J9s,J8s,' +
-         'JTo,' +
-         'T9s,T8s,T7s,' +
-         '98s,97s,' +
-         '87s,86s,' +
-         '76s,75s,' +
-         '65s,64s,' +
-         '54s,53s'
+  '4bet': {
+    agg:    { table: 'vs_3bet',  keyBy: 'agg_caller', take: 'raise' },
+    caller: { table: 'vs_4bet',  keyBy: 'agg_caller', take: 'call'  },
   },
-  UTG_vs_BB: {
-    oop: 'AA,KK,QQ,JJ,TT,99,88,77,' +
-         'AKs,AQs,AJs,ATs,A9s,A5s,' +
-         'AKo,AQo,AJo,' +
-         'KQs,KJs,KTs,' +
-         'QJs,QTs,' +
-         'JTs,T9s,' +
-         '98s,87s,76s,65s',
-    ip:  'AA,KK,QQ,JJ,TT,99,88,77,66,55,44,33,22,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A5s,A4s,A3s,' +
-         'AKo,AQo,AJo,ATo,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,' +
-         'KQo,KJo,KTo,' +
-         'QJs,QTs,Q9s,Q8s,' +
-         'QJo,QTo,' +
-         'JTs,J9s,J8s,' +
-         'JTo,' +
-         'T9s,T8s,' +
-         '98s,97s,' +
-         '87s,86s,' +
-         '76s,75s,' +
-         '65s,64s,' +
-         '54s'
-  },
-  BTN_vs_SB: {
-    oop: 'AA,KK,QQ,JJ,TT,99,88,77,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,' +
-         'A5s,A4s,A3s,A2s,' +
-         'AKo,AQo,AJo,ATo,' +
-         'KQs,KJs,KTs,K9s,' +
-         'KQo,KJo,' +
-         'QJs,QTs,Q9s,' +
-         'JTs,J9s,' +
-         'T9s,98s,' +
-         '87s,76s,65s',
-    ip:  'AA,KK,QQ,JJ,TT,99,88,77,66,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,' +
-         'A5s,A4s,' +
-         'AKo,AQo,AJo,ATo,' +
-         'KQs,KJs,KTs,K9s,' +
-         'KQo,KJo,' +
-         'QJs,QTs,Q9s,' +
-         'QJo,' +
-         'JTs,J9s,' +
-         'T9s,T8s,' +
-         '98s,97s,' +
-         '87s,86s,' +
-         '76s,65s,54s'
-  },
-  // Cold-caller pairs (opener vs a non-blind caller). DERIVE-ONLY: ranges are
-  // left empty and filled from the preflop bridge (postflop-input-ranges.json)
-  // for the 3bet/4bet cases. In a single-raised pot the defender 3bets rather
-  // than flat-calls, so the srp range stays empty and main() skips the spot.
-  UTG_vs_MP:  { oop: '', ip: '' },
-  UTG_vs_CO:  { oop: '', ip: '' },
-  UTG_vs_BTN: { oop: '', ip: '' },
-  UTG_vs_SB:  { oop: '', ip: '' },
-  MP_vs_CO:   { oop: '', ip: '' },
-  MP_vs_BTN:  { oop: '', ip: '' },
-  MP_vs_SB:   { oop: '', ip: '' },
-  MP_vs_BB:   { oop: '', ip: '' },
-  CO_vs_BTN:  { oop: '', ip: '' },
-  CO_vs_SB:   { oop: '', ip: '' },
 };
+
+// All matchups, aggressor-first, listed in BOTH directions. The bridge derives
+// ranges for every (level, matchup) pair and skips those with no lookup data,
+// so e.g. BB_SB only produces a 3bet spot and SB_BB only srp / 4bet.
+export const MATCHUPS = [
+  'SB_BB',   'BB_SB',
+  'BTN_BB',  'BB_BTN',
+  'CO_BB',   'BB_CO',
+  'UTG_BB',  'BB_UTG',
+  'MP_BB',   'BB_MP',
+  'BTN_SB',  'SB_BTN',
+  'CO_SB',   'SB_CO',
+  'MP_SB',   'SB_MP',
+  'UTG_SB',  'SB_UTG',
+  'CO_BTN',  'BTN_CO',
+  'MP_BTN',  'BTN_MP',
+  'UTG_BTN', 'BTN_UTG',
+  'MP_CO',   'CO_MP',
+  'UTG_CO',  'CO_UTG',
+  'UTG_MP',  'MP_UTG',
+];
