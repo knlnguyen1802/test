@@ -14,29 +14,34 @@ graph BT
     end
 
     subgraph TERMINAL[Gtoterminal]
-        CONFIG[Config<br>1. Gametree<br>2. Selective boards]
         SCR[postflop script]
         SOLVER[Solver]
     end
 
-    subgraph DATA[Solution]
+    subgraph DATA[Solutions]
         PREDB[(Preflop range)]
         POSTDB[(Post flop solution)]
     end
 
+    CONFIG[[CONFIG <br> Ranges, Game Tree <br> Flop, spr]]
+
     subgraph TOOL[Poker tools]
     end
 
+    PREDB --> |1. range| CONFIG
+    CONFIG --> |2. input| SCR
+    CONFIG -.-> |form actions| TOOL
 
     CORE --> |used by| SOLVER
     SOLVER --> |used by| SCR
-    PREDB --> |input| SCR
-    CONFIG --> |input| SCR
-    SCR --> |build| POSTDB
-    DATA -----> |Lookup API| TOOL
+    SCR --> |3. build| POSTDB
+    POSTDB --> |4. Lookup API| TOOL
+
 ```
 
 ## Imporant files
 | Files     | Description |
 |-----------|-------------|
 |/scripts/precompute-preflop.js| Script to gather input and run solver |
+
+**Note:** 1->2->3->4 is the path we build post flop data to look up.

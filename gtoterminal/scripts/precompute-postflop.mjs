@@ -41,6 +41,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { execSync, fork, spawn } from 'child_process';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join } from 'path';
+import { LINE_BET_SIZES, DEPTH_CONFIGS, MATCHUPS, FLOP_BOARDS } from './postflop_config/index.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -84,43 +85,9 @@ const NATIVE_AVAILABLE = existsSync(NATIVE_BIN);
 
 // ---------------------------------------------------------------------------
 // Case configuration — maps a case key to solver pot/stack/tree settings.
-// Preflop-line cases (srp/3bet/4bet) are all 100bb effective; their SPR is
-// fixed by the preflop line. Legacy stack-depth cases (100bb/40bb/25bb/15bb)
-// are kept alongside for back-compat.
+// LINE_BET_SIZES and DEPTH_CONFIGS are defined in
+// scripts/postflop_config/game-tree.mjs (imported above).
 // ---------------------------------------------------------------------------
-
-// Shared bet/raise tree for the three 100bb preflop-line cases. Sizings are
-// identical across cases — only the effective stack (SPR) differs, which is
-// what decides how many raise levels fit before players are pot-committed and
-// the solver collapses the remaining line to an all-in (via the add/force
-// all-in thresholds passed to manager.init()).
-//   donk (OOP lead) enabled at 50% on turn & river
-//   flop bet 33%/75%, turn bet 33%/75%, river bet 25%/100%
-//   raise 60% on every street
-const LINE_BET_SIZES = {
-  oopFlopBet: '33%,75%',           oopFlopRaise: '60%',
-  oopTurnBet: '33%,75%',           oopTurnRaise: '60%', oopTurnDonk: '50%',
-  oopRiverBet: '25%,100%',         oopRiverRaise: '60%', oopRiverDonk: '50%',
-  ipFlopBet: '33%,75%',            ipFlopRaise: '60%',
-  ipTurnBet: '33%,75%',            ipTurnRaise: '60%',
-  ipRiverBet: '25%,100%',          ipRiverRaise: '60%',
-};
-
-const DEPTH_CONFIGS = {
-  // --- Preflop-line cases (100bb effective; SPR set by the preflop line) ---
-  'srp':  { pot: 100, stack: 1600, donkOption: true, betSizes: LINE_BET_SIZES },
-  '3bet': { pot: 100, stack: 540,  donkOption: true, betSizes: LINE_BET_SIZES },
-  '4bet': { pot: 100, stack: 170,  donkOption: true, betSizes: LINE_BET_SIZES },
-  // --- 100bb baseline case ---
-  '100bb': { pot: 100, stack: 450, donkOption: true, betSizes: {
-    oopFlopBet: '33%,75%', oopFlopRaise: '50%',
-    oopTurnBet: '50%,75%', oopTurnRaise: '50%', oopTurnDonk: '50%',
-    oopRiverBet: '67%,100%', oopRiverRaise: '50%', oopRiverDonk: '50%',
-    ipFlopBet: '33%,75%', ipFlopRaise: '50%',
-    ipTurnBet: '50%,75%', ipTurnRaise: '50%',
-    ipRiverBet: '67%,100%', ipRiverRaise: '50%',
-  }},
-};
 
 const DEPTH = getArg('depth', 'srp');
 if (!DEPTH_CONFIGS[DEPTH]) {
@@ -255,175 +222,9 @@ function setHandWeight(range, hand, weight) {
 }
 
 // ---------------------------------------------------------------------------
-// Position matchup definitions
+// Position matchup definitions — imported from postflop_config/matchups.mjs.
+// MATCHUPS is mutated in place below with preflop-derived range overrides.
 // ---------------------------------------------------------------------------
-
-const MATCHUPS = {
-  SB_vs_BB: {
-    oop: 'AA,KK,QQ,JJ,TT,99,88,77,66,55,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A6s,A5s,A4s,A3s,A2s,' +
-         'AKo,AQo,AJo,ATo,A9o,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,K6s,K5s,' +
-         'KQo,KJo,KTo,' +
-         'QJs,QTs,Q9s,Q8s,Q7s,' +
-         'QJo,QTo,' +
-         'JTs,J9s,J8s,J7s,' +
-         'JTo,' +
-         'T9s,T8s,T7s,' +
-         '98s,97s,96s,' +
-         '87s,86s,85s,' +
-         '76s,75s,74s,' +
-         '65s,64s,63s,' +
-         '54s,53s,' +
-         '43s',
-    ip:  'AA,KK,QQ,JJ,TT,99,88,77,66,55,44,33,22,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A6s,A5s,A4s,A3s,A2s,' +
-         'AKo,AQo,AJo,ATo,A9o,A8o,A7o,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,K6s,K5s,K4s,' +
-         'KQo,KJo,KTo,K9o,' +
-         'QJs,QTs,Q9s,Q8s,Q7s,Q6s,' +
-         'QJo,QTo,Q9o,' +
-         'JTs,J9s,J8s,J7s,J6s,' +
-         'JTo,J9o,' +
-         'T9s,T8s,T7s,T6s,' +
-         'T9o,' +
-         '98s,97s,96s,95s,' +
-         '87s,86s,85s,84s,' +
-         '76s,75s,74s,' +
-         '65s,64s,63s,' +
-         '54s,53s,52s,' +
-         '43s,42s,32s'
-  },
-  BTN_vs_BB: {
-    oop: 'AA,KK,QQ,JJ,TT,99,88,77,66,55,44,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A6s,A5s,A4s,A3s,A2s,' +
-         'AKo,AQo,AJo,ATo,A9o,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,K6s,K5s,' +
-         'KQo,KJo,KTo,' +
-         'QJs,QTs,Q9s,Q8s,Q7s,' +
-         'QJo,QTo,' +
-         'JTs,J9s,J8s,' +
-         'JTo,' +
-         'T9s,T8s,T7s,' +
-         '98s,97s,' +
-         '87s,86s,' +
-         '76s,75s,' +
-         '65s,64s,' +
-         '54s,53s,' +
-         '43s',
-    ip:  'AA,KK,QQ,JJ,TT,99,88,77,66,55,44,33,22,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A6s,A5s,A4s,A3s,A2s,' +
-         'AKo,AQo,AJo,ATo,A9o,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,K6s,K5s,' +
-         'KQo,KJo,KTo,K9o,' +
-         'QJs,QTs,Q9s,Q8s,Q7s,' +
-         'QJo,QTo,Q9o,' +
-         'JTs,J9s,J8s,J7s,' +
-         'JTo,J9o,' +
-         'T9s,T8s,T7s,' +
-         'T9o,' +
-         '98s,97s,96s,' +
-         '87s,86s,85s,' +
-         '76s,75s,74s,' +
-         '65s,64s,' +
-         '54s,53s,' +
-         '43s'
-  },
-  CO_vs_BB: {
-    oop: 'AA,KK,QQ,JJ,TT,99,88,77,66,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A5s,A4s,' +
-         'AKo,AQo,AJo,ATo,' +
-         'KQs,KJs,KTs,K9s,K8s,' +
-         'KQo,KJo,' +
-         'QJs,QTs,Q9s,Q8s,' +
-         'QJo,' +
-         'JTs,J9s,J8s,' +
-         'T9s,T8s,' +
-         '98s,97s,' +
-         '87s,86s,' +
-         '76s,75s,' +
-         '65s,64s,' +
-         '54s',
-    ip:  'AA,KK,QQ,JJ,TT,99,88,77,66,55,44,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A5s,A4s,A3s,' +
-         'AKo,AQo,AJo,ATo,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,' +
-         'KQo,KJo,KTo,' +
-         'QJs,QTs,Q9s,Q8s,Q7s,' +
-         'QJo,QTo,' +
-         'JTs,J9s,J8s,' +
-         'JTo,' +
-         'T9s,T8s,T7s,' +
-         '98s,97s,' +
-         '87s,86s,' +
-         '76s,75s,' +
-         '65s,64s,' +
-         '54s,53s'
-  },
-  UTG_vs_BB: {
-    oop: 'AA,KK,QQ,JJ,TT,99,88,77,' +
-         'AKs,AQs,AJs,ATs,A9s,A5s,' +
-         'AKo,AQo,AJo,' +
-         'KQs,KJs,KTs,' +
-         'QJs,QTs,' +
-         'JTs,T9s,' +
-         '98s,87s,76s,65s',
-    ip:  'AA,KK,QQ,JJ,TT,99,88,77,66,55,44,33,22,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,A5s,A4s,A3s,' +
-         'AKo,AQo,AJo,ATo,' +
-         'KQs,KJs,KTs,K9s,K8s,K7s,' +
-         'KQo,KJo,KTo,' +
-         'QJs,QTs,Q9s,Q8s,' +
-         'QJo,QTo,' +
-         'JTs,J9s,J8s,' +
-         'JTo,' +
-         'T9s,T8s,' +
-         '98s,97s,' +
-         '87s,86s,' +
-         '76s,75s,' +
-         '65s,64s,' +
-         '54s'
-  },
-  BTN_vs_SB: {
-    oop: 'AA,KK,QQ,JJ,TT,99,88,77,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,A7s,' +
-         'A5s,A4s,A3s,A2s,' +
-         'AKo,AQo,AJo,ATo,' +
-         'KQs,KJs,KTs,K9s,' +
-         'KQo,KJo,' +
-         'QJs,QTs,Q9s,' +
-         'JTs,J9s,' +
-         'T9s,98s,' +
-         '87s,76s,65s',
-    ip:  'AA,KK,QQ,JJ,TT,99,88,77,66,' +
-         'AKs,AQs,AJs,ATs,A9s,A8s,' +
-         'A5s,A4s,' +
-         'AKo,AQo,AJo,ATo,' +
-         'KQs,KJs,KTs,K9s,' +
-         'KQo,KJo,' +
-         'QJs,QTs,Q9s,' +
-         'QJo,' +
-         'JTs,J9s,' +
-         'T9s,T8s,' +
-         '98s,97s,' +
-         '87s,86s,' +
-         '76s,65s,54s'
-  },
-  // Cold-caller pairs (opener vs a non-blind caller). DERIVE-ONLY: ranges are
-  // left empty and filled from the preflop bridge (postflop-input-ranges.json)
-  // for the 3bet/4bet cases. In a single-raised pot the defender 3bets rather
-  // than flat-calls, so the srp range stays empty and main() skips the spot.
-  UTG_vs_MP:  { oop: '', ip: '' },
-  UTG_vs_CO:  { oop: '', ip: '' },
-  UTG_vs_BTN: { oop: '', ip: '' },
-  UTG_vs_SB:  { oop: '', ip: '' },
-  MP_vs_CO:   { oop: '', ip: '' },
-  MP_vs_BTN:  { oop: '', ip: '' },
-  MP_vs_SB:   { oop: '', ip: '' },
-  MP_vs_BB:   { oop: '', ip: '' },
-  CO_vs_BTN:  { oop: '', ip: '' },
-  CO_vs_SB:   { oop: '', ip: '' },
-};
 
 // ---------------------------------------------------------------------------
 // Preflop-derived range override
@@ -468,34 +269,8 @@ if (!IS_CHILD && !USE_BUILTIN_RANGES) {
 }
 
 // ---------------------------------------------------------------------------
-// Board definitions
+// Board definitions — imported from postflop_config/flop-boards.mjs (FLOP_BOARDS)
 // ---------------------------------------------------------------------------
-
-const FLOP_BOARDS = [
-  { board: ['Ac','7d','2h'], texture: 'dry_rainbow',      label: 'A72r' },
-  { board: ['Ks','8d','3h'], texture: 'dry_rainbow',      label: 'K83r' },
-  { board: ['Qh','6c','2d'], texture: 'dry_rainbow',      label: 'Q62r' },
-  { board: ['Ad','Td','5h'], texture: 'dry_twotone',      label: 'AT5dd' },
-  { board: ['Kh','9h','2c'], texture: 'dry_twotone',      label: 'K92hh' },
-  { board: ['Qc','7c','4d'], texture: 'dry_twotone',      label: 'Q74cc' },
-  { board: ['Jc','Td','9h'], texture: 'wet_rainbow',      label: 'JT9r' },
-  { board: ['Th','8c','7d'], texture: 'wet_rainbow',      label: 'T87r' },
-  { board: ['9s','8c','7d'], texture: 'wet_rainbow',      label: '987r' },
-  { board: ['Jd','Td','8h'], texture: 'wet_twotone',      label: 'JT8dd' },
-  { board: ['Th','9h','7c'], texture: 'wet_twotone',      label: 'T97hh' },
-  { board: ['8c','7c','6d'], texture: 'wet_twotone',      label: '876cc' },
-  { board: ['Ks','Ts','4s'], texture: 'monotone',         label: 'KT4sss' },
-  { board: ['Qh','7h','3h'], texture: 'monotone',         label: 'Q73hhh' },
-  { board: ['Kd','Kh','4c'], texture: 'paired_dry',       label: 'KK4r' },
-  { board: ['7c','7d','2h'], texture: 'paired_dry',       label: '772r' },
-  { board: ['As','Ah','8c'], texture: 'paired_dry',       label: 'AA8r' },
-  { board: ['Ac','Kd','Jh'], texture: 'highly_connected', label: 'AKJr' },
-  { board: ['Kh','Qd','Tc'], texture: 'highly_connected', label: 'KQTr' },
-  { board: ['As','Qd','Jc'], texture: 'highly_connected', label: 'AQJr' },
-  { board: ['5d','3h','2c'], texture: 'dry_rainbow',      label: '532r' },
-  { board: ['6c','4d','3h'], texture: 'wet_rainbow',      label: '643r' },
-  { board: ['7h','5d','4c'], texture: 'wet_rainbow',      label: '754r' },
-];
 
 // ---------------------------------------------------------------------------
 // Bet sizing: from depth config (varies by stack depth)
