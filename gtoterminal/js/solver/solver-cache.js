@@ -88,70 +88,78 @@ GTO.SolverCache = (function() {
   }
 
   // -----------------------------------------------------------------------
-  // Board highness classification
+  // Board height anchor — the strategically dominant rank of the board.
+  // Unpaired boards anchor on the top card; paired boards anchor on the pair
+  // rank (e.g. A88 plays by the pair of 8s, so it matches an 88x board, not AAx).
+  // Returns a rank index in cardRank() units (2=0 .. A=12). See BOARD.md §2.
   // -----------------------------------------------------------------------
 
-  function boardHighness(boardCards) {
+  function anchorRank(boardCards) {
     var ranks = boardCards.map(cardRank);
-    var maxRank = Math.max.apply(null, ranks);
-    if (maxRank >= 12) return 'ace_high';   // A
-    if (maxRank >= 11) return 'king_high';  // K
-    if (maxRank >= 10) return 'queen_high'; // Q
-    if (maxRank >= 9)  return 'jack_high';  // J
-    if (maxRank >= 8)  return 'ten_high';   // T
-    return 'low';
+    var counts = {};
+    for (var i = 0; i < ranks.length; i++) counts[ranks[i]] = (counts[ranks[i]] || 0) + 1;
+    var pairRank = -1;
+    for (var r in counts) {
+      if (counts[r] >= 2 && Number(r) > pairRank) pairRank = Number(r);
+    }
+    return pairRank >= 0 ? pairRank : Math.max.apply(null, ranks);
   }
 
   // -----------------------------------------------------------------------
   // Find the closest pre-computed board for a given texture
   // -----------------------------------------------------------------------
 
-  // Mapping from texture -> representative board labels in our solution set
+  // Texture -> solved board labels (must match scripts/postflop_config/
+  // flop-boards.mjs). See BOARD.md §3.
   var TEXTURE_BOARDS = {
-    dry_rainbow:      ['A72r', 'K83r', 'Q62r', '532r'],
-    dry_twotone:      ['AT5dd', 'K92hh', 'Q74cc'],
-    wet_rainbow:      ['JT9r', 'T87r', '987r', '643r', '754r'],
-    wet_twotone:      ['JT8dd', 'T97hh', '876cc'],
-    monotone:         ['KT4sss', 'Q73hhh'],
-    paired_dry:       ['KK4r', '772r', 'AA8r'],
-    paired_wet:       ['KK4r', '772r'],  // reuse paired boards
-    highly_connected: ['AKJr', 'KQTr', 'AQJr']
+    dry_rainbow:      ['A72r', 'K83r', 'Q62r', 'J74r', '852r'],
+    dry_twotone:      ['A72tt', 'K92tt', 'Q74tt', 'J83tt', '852tt'],
+    wet_rainbow:      ['QT8r', 'J97r', 'T86r', '864r'],
+    wet_twotone:      ['QT8tt', 'J97tt', 'T86tt', '864tt'],
+    monotone:         ['AT6sss', 'KT4sss', '853sss'],
+    paired_dry:       ['AA8r', 'KK4r', '992r', '772r'],
+    paired_wet:       ['JJ9r', 'TT8r', '887r', '553r'],
+    highly_connected: ['AKQr', 'KQTr', 'JT9r', 'T98r', '765r']
   };
 
-  // Board label -> approximate "height" for matching purposes
-  var BOARD_HEIGHT = {
-    'A72r': 'ace_high', 'K83r': 'king_high', 'Q62r': 'queen_high', '532r': 'low',
-    'AT5dd': 'ace_high', 'K92hh': 'king_high', 'Q74cc': 'queen_high',
-    'JT9r': 'jack_high', 'T87r': 'ten_high', '987r': 'ten_high',
-    '643r': 'low', '754r': 'low',
-    'JT8dd': 'jack_high', 'T97hh': 'ten_high', '876cc': 'low',
-    'KT4sss': 'king_high', 'Q73hhh': 'queen_high',
-    'KK4r': 'king_high', '772r': 'low', 'AA8r': 'ace_high',
-    'AKJr': 'ace_high', 'KQTr': 'king_high', 'AQJr': 'ace_high'
+  // If a texture somehow has no boards, fall back to the nearest sibling.
+  var TEXTURE_FALLBACK = {
+    paired_wet: 'paired_dry',
+    wet_twotone: 'wet_rainbow',
+    dry_twotone: 'dry_rainbow',
+    highly_connected: 'wet_rainbow',
+    monotone: 'wet_twotone'
   };
 
-  // Height priority for matching (closer = better)
-  var HEIGHT_ORDER = ['ace_high', 'king_high', 'queen_high', 'jack_high', 'ten_high', 'low'];
+  // Board label -> anchor rank (cardRank units: 2=0 .. A=12). Paired boards use
+  // the pair rank. Keep in sync with TEXTURE_BOARDS.
+  var BOARD_ANCHOR = {
+    'A72r': 12, 'K83r': 11, 'Q62r': 10, 'J74r': 9, '852r': 6,
+    'A72tt': 12, 'K92tt': 11, 'Q74tt': 10, 'J83tt': 9, '852tt': 6,
+    'QT8r': 10, 'J97r': 9, 'T86r': 8, '864r': 6,
+    'QT8tt': 10, 'J97tt': 9, 'T86tt': 8, '864tt': 6,
+    'AT6sss': 12, 'KT4sss': 11, '853sss': 6,
+    'AA8r': 12, 'KK4r': 11, '992r': 7, '772r': 5,
+    'JJ9r': 9, 'TT8r': 8, '887r': 6, '553r': 3,
+    'AKQr': 12, 'KQTr': 11, 'JT9r': 9, 'T98r': 8, '765r': 5
+  };
 
   function findClosestBoard(texture, boardCards) {
     var candidates = TEXTURE_BOARDS[texture];
+    if ((!candidates || candidates.length === 0) && TEXTURE_FALLBACK[texture]) {
+      candidates = TEXTURE_BOARDS[TEXTURE_FALLBACK[texture]];
+    }
     if (!candidates || candidates.length === 0) return null;
     if (candidates.length === 1) return candidates[0];
 
-    var height = boardHighness(boardCards);
-    var heightIdx = HEIGHT_ORDER.indexOf(height);
-
-    // Score each candidate by distance in height
+    var a = anchorRank(boardCards);
     var best = candidates[0];
     var bestDist = 999;
     for (var i = 0; i < candidates.length; i++) {
-      var candHeight = BOARD_HEIGHT[candidates[i]] || 'low';
-      var candIdx = HEIGHT_ORDER.indexOf(candHeight);
-      var dist = Math.abs(heightIdx - candIdx);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = candidates[i];
-      }
+      var candAnchor = BOARD_ANCHOR[candidates[i]];
+      if (candAnchor === undefined) continue;
+      var dist = Math.abs(candAnchor - a);
+      if (dist < bestDist) { bestDist = dist; best = candidates[i]; }
     }
     return best;
   }
