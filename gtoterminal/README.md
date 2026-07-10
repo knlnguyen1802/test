@@ -100,24 +100,103 @@ graph TB
 
 
 # Lookup API
+
+The API is the single entry point for a poker tool. **The tool passes raw game
+state only** — positions, stacks, board, action history, hero hand. The API
+**wraps all the algorithm logic**: bet-level detection, matchup keying, board
+generalization, game-tree navigation and hand-strength classification. The tool
+never computes a matchup key, a board texture, or a tree path itself.
+
+```mermaid
+graph LR
+    GS["Game state<br/>(positions, aggressor,<br/>stack/pot, board, line, hand)"]
+    subgraph API["Lookup API (wraps the algo)"]
+        L1["1. bet level<br/>spr → srp/3bet/4bet"]
+        L2["2. matchup key<br/>aggressor-first AGG_CALLER"]
+        L3["3. seats<br/>OOP/IP by position"]
+        L4["4. board → texture+anchor<br/>→ matched solved board"]
+        L5["5. walk line<br/>→ decision node"]
+        L6["6. hand → hand class"]
+        L1 --> L2 --> L3 --> L4 --> L5 --> L6
+    end
+    OUT["actions<br/>[{action, size, freq}]"]
+    GS --> API --> OUT
 ```
-preflop_look_up(hero_pos, val_pos, stack, spot) -> [actions]
-```
-[action] = [fold: %, call: %, raise: %]
 
-spot: rfi, vs_raise, vs_3bet, vs_4bet
-
-if spot is vs_4bet or stack is too short, raise -> all-in
-
+## Preflop
 
 ```
-preflop_look_up(hero_pos, val_pos, spr, board, spot, hand) -> [actions]
+preflop_lookup(hero_pos, villain_pos, spot, stack, hand=None) -> actions
 ```
-[action] = [fold: %, call: %, raise: %]
 
-board -> flop, turn, river
+- `spot ∈ {rfi, vs_raise, vs_3bet, vs_4bet}` — the preflop node.
+- `hand` optional: with a hand → that hand's mix; without → the whole range map.
+- `actions = [fold%, call%, raise%]`.
 
-spot = [action of previous rounds, action of this round]
+The API wraps: select the table by `spot`, build the lookup key from the two
+positions (`hero`/`villain` decide opener vs responder), read `pure_*` + `mixed`,
+and convert `raise → all-in` when `spot = vs_4bet` or the stack is too short.
+Source: `preflop-lookup/preflop-ranges.js`.
 
-spot must be compliant to game tree and represent the path from root
+## Postflop
+
+```
+postflop_lookup(hero_pos, villain_pos, aggressor_pos,
+                stack, pot, board, line, hand) -> actions
+```
+
+**Game state the tool passes (nothing pre-computed):**
+
+| Arg | Meaning |
+|---|---|
+| `hero_pos`, `villain_pos` | the two seats in the pot |
+| `aggressor_pos` | who made the last preflop raise (opener / 3bettor / 4bettor) |
+| `stack`, `pot` | effective stack and pot → the SPR |
+| `board` | 3–5 cards, e.g. `['Ah','7d','2c']` (+ turn, river) |
+| `line` | postflop action path so far, e.g. `['X','B33','C']` |
+| `hand` | hero hole cards, e.g. `['Ah','Kh']` |
+
+**What the API does internally (the wrapped algo):**
+
+1. **Bet level** — from the SPR / preflop context → `srp | 3bet | 4bet`
+   (all 100bb-effective; SPR fixed by the preflop line).
+2. **Matchup key** — aggressor-first `AGG_CALLER` from the positions +
+   `aggressor_pos` (e.g. SB opened, BB 3bet ⇒ `BB_SB`).
+3. **Seats** — OOP/IP by postflop position order (blinds act first), independent
+   of who is the aggressor.
+4. **Board generalization** — classify the board's texture, take its anchor rank
+   (top card, or pair rank on paired boards), and snap to the closest solved
+   board of that texture (see [BOARD.md](BOARD.md)).
+5. **Navigate** — walk `line` from the root of the postflop data tree to the
+   decision node, resolving the street (flop / turn / river) and the canonical
+   action-line slot.
+6. **Hand class** — classify `hand` on the board into one of the 18
+   hand-strength classes.
+7. **Return** the node's strategy for that hand class.
+
+**Return shape** — the mixed strategy over the node's *legal* actions, plus the
+resolution metadata:
+
+```
+{
+  actions: [ {action: 'Check', size: 0,  freq: 0.62},
+             {action: 'Bet',   size: 33, freq: 0.30},
+             {action: 'Bet',   size: 75, freq: 0.08} ],
+  hand_class:    'top_pair_strong',
+  matchup:       'BB_SB',
+  bet_level:     '3bet',
+  matched_board: 'A72r',
+  oop:           'SB',
+  ip:            'BB',
+  exploitability: 0.4
+}
+```
+
+**Constraints / fallbacks:**
+- `line` must be a canonical line the data tree stores (the sampled decision
+  nodes / action lines). Unmatched lines fall back to the nearest stored node.
+- If a matchup/bet-level/board has no solved data, the API returns `null` (the
+  tool then falls back to a heuristic or the preflop-style default).
+- `actions` sizes are bet/raise percentages of the pot, mirroring the solved
+  game-tree sizings; the set of legal actions is dynamic per node.
 

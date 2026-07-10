@@ -42,6 +42,8 @@ graph BT
 ## Imporant files
 | Files     | Description |
 |-----------|-------------|
+|/js/data/preflop-ranges.js or /preflop-lookup/preflop-ranges| Preflop solution |
+|/scripts/preflop-to-postflop-ranges.js| Extract data from preflop solution and build input ranges for postflop solver |
 |/scripts/precompute-preflop.js| Script to gather input and run solver |
 
 **Note:** 1->2->3->4 is the path we build post flop data to look up.
