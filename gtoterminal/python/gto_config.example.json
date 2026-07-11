@@ -1,0 +1,37 @@
+{
+  "//": "GTO lookup data configuration. Copy to gto_config.json and edit paths.",
+  "//data_root": "Base directory that the relative paths below are resolved against.",
+  "data_root": "../js/data",
+
+  "//preflop": "Preflop range file (JS or JSON). 'var' is the assigned global name inside a .js file.",
+  "preflop": {
+    "path": "preflop-ranges.js",
+    "var": "GTO.Data.PreflopRanges",
+    "case": "cash",
+    "stack": "100bb"
+  },
+
+  "//bet_levels": "One entry per pot type. flop/turn are loaded fully at init(); river is loaded per-chunk on demand.",
+  "bet_levels": {
+    "srp": {
+      "flop":  { "path": "postflop-solutions-srp.js",      "var": "GTO.Data.PostflopSolutions_SRP" },
+      "turn":  { "path": "postflop-solutions-turn-srp.js", "var": "GTO.Data.PostflopSolutionsTurn_SRP" },
+      "river": { "dir":  "river/srp" }
+    },
+    "3bet": {
+      "flop":  { "path": "postflop-solutions-3bet.js",      "var": "GTO.Data.PostflopSolutions_3BET" },
+      "turn":  { "path": "postflop-solutions-turn-3bet.js", "var": "GTO.Data.PostflopSolutionsTurn_3BET" },
+      "river": { "dir":  "river/3bet" }
+    },
+    "4bet": {
+      "flop":  { "path": "postflop-solutions-4bet.js",      "var": "GTO.Data.PostflopSolutions_4BET" },
+      "turn":  { "path": "postflop-solutions-turn-4bet.js", "var": "GTO.Data.PostflopSolutionsTurn_4BET" },
+      "river": { "dir":  "river/4bet" }
+    }
+  },
+
+  "//river_cache": "Bounds RAM: keep at most `max_chunks` river files (one per matchup+board) resident. LRU-evicted.",
+  "river_cache": {
+    "max_chunks": 4
+  }
+}

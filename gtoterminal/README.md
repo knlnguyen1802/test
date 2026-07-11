@@ -46,7 +46,7 @@ The current config **Game Tree** for all SPR:
 
 **Round dot line:**  represent multiple options (per bet size), depend on config.
 
-**All-in node:** may be a subtree if stack is deeper/solver more detailed.
+**All-in node:** may be a subtree if stack is deeper and solver has a more detailed config.
 
 ```mermaid
 graph TB
@@ -109,9 +109,9 @@ never computes a matchup key, a board texture, or a tree path itself.
 
 ```mermaid
 graph LR
-    GS["Game state<br/>(positions, aggressor,<br/>stack/pot, board, line, hand)"]
+    GS["Game state<br/>(positions, aggressor,<br/>bet level, board, line, hand)"]
     subgraph API["Lookup API (wraps the algo)"]
-        L1["1. bet level<br/>spr → srp/3bet/4bet"]
+        L1["1. bet level<br/>given by tool (preflop)"]
         L2["2. matchup key<br/>aggressor-first AGG_CALLER"]
         L3["3. seats<br/>OOP/IP by position"]
         L4["4. board → texture+anchor<br/>→ matched solved board"]
@@ -142,7 +142,7 @@ Source: `preflop-lookup/preflop-ranges.js`.
 
 ```
 postflop_lookup(hero_pos, villain_pos, aggressor_pos,
-                stack, pot, board, line, hand) -> actions
+                bet_level, board, line, hand) -> actions
 ```
 
 **Game state the tool passes (nothing pre-computed):**
@@ -151,15 +151,22 @@ postflop_lookup(hero_pos, villain_pos, aggressor_pos,
 |---|---|
 | `hero_pos`, `villain_pos` | the two seats in the pot |
 | `aggressor_pos` | who made the last preflop raise (opener / 3bettor / 4bettor) |
-| `stack`, `pot` | effective stack and pot → the SPR |
+| `bet_level` | `srp` / `3bet` / `4bet` — the pot type, from the actual preflop action |
 | `board` | 3–5 cards, e.g. `['Ah','7d','2c']` (+ turn, river) |
 | `line` | postflop action path so far, e.g. `['X','B33','C']` |
 | `hand` | hero hole cards, e.g. `['Ah','Kh']` |
 
+> **Note — bet level is an input, not inferred.** From SPR we *could* guess the
+> pot type, but an opponent's weird bet size distorts SPR. Inferring would still
+> snap to a plausible **depth**, yet load the **wrong preflop ranges** (srp vs
+> 3bet vs 4bet) — and the range matters far more than the depth. The poker tool
+> knows exactly what happened preflop, so it passes `bet_level` directly.
+
 **What the API does internally (the wrapped algo):**
 
-1. **Bet level** — from the SPR / preflop context → `srp | 3bet | 4bet`
-   (all 100bb-effective; SPR fixed by the preflop line).
+1. **Bet level** — taken directly from `bet_level`. It selects both the range
+   set and the SPR / game-tree config (all 100bb-effective). **Not** inferred
+   from the SPR (see note above).
 2. **Matchup key** — aggressor-first `AGG_CALLER` from the positions +
    `aggressor_pos` (e.g. SB opened, BB 3bet ⇒ `BB_SB`).
 3. **Seats** — OOP/IP by postflop position order (blinds act first), independent

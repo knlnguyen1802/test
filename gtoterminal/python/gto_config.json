@@ -1,0 +1,19 @@
+{
+  "data_root": "../js/data",
+  "preflop": {
+    "path": "preflop-ranges.js",
+    "var": "GTO.Data.PreflopRanges",
+    "case": "cash",
+    "stack": "100bb"
+  },
+  "bet_levels": {
+    "srp": {
+      "flop":  { "path": "postflop-solutions-srp.js",      "var": "GTO.Data.PostflopSolutions_SRP" },
+      "turn":  { "path": "postflop-solutions-turn-srp.js", "var": "GTO.Data.PostflopSolutionsTurn_SRP" },
+      "river": { "dir":  "river/srp" }
+    }
+  },
+  "river_cache": {
+    "max_chunks": 4
+  }
+}

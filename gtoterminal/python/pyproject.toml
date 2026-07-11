@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gto-lookup"
+version = "0.1.0"
+description = "GTO poker lookup API over pre-computed preflop ranges and postflop solutions"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "AGPL-3.0-or-later" }
+authors = [{ name = "gto-lab" }]
+keywords = ["poker", "gto", "solver", "lookup"]
+
+# Core library is dependency-free (stdlib only). Optional extras below.
+dependencies = []
+
+[project.optional-dependencies]
+# Streaming JSON extraction for river chunks without loading the whole file.
+stream = ["ijson>=3.2"]
+# Building a SQLite index of river data for O(1) row lookups (recommended at scale).
+dev = ["pytest>=7"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+gto_lookup = ["py.typed"]
