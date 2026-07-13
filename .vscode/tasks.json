@@ -1,0 +1,68 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "copy-preflop-heuristic-files",
+			"type": "shell",
+			"command": "Copy-Item -Path \"d:/gto-lab/gtoterminal/preflop-lookup/preflop-ranges.js\" -Destination \"d:/gto-lab/gtoterminal/preflop-lookup/preflop-ranges-heuristic-for-solution.js\" -Force; Copy-Item -Path \"d:/gto-lab/gtoterminal/preflop-lookup/preflop-ranges.js\" -Destination \"d:/gto-lab/gtoterminal/preflop-lookup/preflop-ranges-heuristic-for-input.js\" -Force; Copy-Item -Path \"d:/gto-lab/gtoterminal/preflop-lookup/preflop-ranges.js\" -Destination \"d:/gto-lab/gtoterminal/js/data/preflop-ranges-heuristic-for-solution.js\" -Force; Copy-Item -Path \"d:/gto-lab/gtoterminal/preflop-lookup/preflop-ranges.js\" -Destination \"d:/gto-lab/gtoterminal/js/data/preflop-ranges-heuristic-for-input.js\" -Force"
+		},
+		{
+			"label": "generate-preflop-heuristic-overlays",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/fill-preflop-heuristic-overlays.mjs"
+			]
+		},
+		{
+			"label": "generate-preflop-heuristic-overlays",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/fill-preflop-heuristic-overlays.mjs"
+			]
+		},
+		{
+			"label": "verify-overlay-mirror-hashes",
+			"type": "shell",
+			"command": "Get-FileHash gtoterminal/preflop-lookup/preflop-ranges-heuristic-for-input.js; Get-FileHash gtoterminal/js/data/preflop-ranges-heuristic-for-input.js; Get-FileHash gtoterminal/preflop-lookup/preflop-ranges-heuristic-for-solution.js; Get-FileHash gtoterminal/js/data/preflop-ranges-heuristic-for-solution.js"
+		},
+		{
+			"label": "validate-preflop-ranges-integrity",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"-e",
+				"const fs=require('fs');const vm=require('vm');const src=fs.readFileSync('gtoterminal/preflop-lookup/preflop-ranges.js','utf8');const ctx={window:{},GTO:{}};ctx.window.GTO=ctx.GTO;vm.createContext(ctx);vm.runInContext(src,ctx);const data=ctx.GTO&&ctx.GTO.Data&&ctx.GTO.Data.PreflopRanges;if(!data){console.error('PreflopRanges not found');process.exit(1);}const sumIssues=[];const dupIssues=[];const childIssues=[];function isObj(v){return v&&typeof v==='object'&&!Array.isArray(v);}function collectHands(node){const set=new Set();if(!isObj(node))return set;for(const [k,v] of Object.entries(node)){if(k==='mixed'&&isObj(v)){for(const h of Object.keys(v))set.add(h);}else if(k.startsWith('pure_')&&Array.isArray(v)){for(const h of v)set.add(h);}}return set;}function walk(path,node){if(!isObj(node))return;const buckets={};for(const [k,v] of Object.entries(node)){if(k==='mixed'&&isObj(v)){for(const [hand,arr] of Object.entries(v)){if(!Array.isArray(arr)){sumIssues.push({path:path.join('.'),hand,reason:'mixed value not array',value:arr});continue;}const nums=arr.map(Number);if(nums.some(n=>!Number.isFinite(n))){sumIssues.push({path:path.join('.'),hand,reason:'non-numeric prob',value:arr});continue;}const s=nums.reduce((a,b)=>a+b,0);if(Math.abs(s-1)>1e-6){sumIssues.push({path:path.join('.'),hand,sum:s,value:arr});}buckets[hand]=(buckets[hand]||[]).concat('mixed');}}else if(k.startsWith('pure_')&&Array.isArray(v)){for(const hand of v){buckets[hand]=(buckets[hand]||[]).concat(k);}}}for(const [hand,locs] of Object.entries(buckets)){if(locs.length>1){dupIssues.push({path:path.join('.'),hand,locations:locs});}}const vr=node.vs_raise;const v3=node.vs_3bet;if(isObj(vr)&&isObj(v3)){for(const key of Object.keys(v3)){if(isObj(vr[key])&&isObj(v3[key])){const parent=collectHands(vr[key]);const child=collectHands(v3[key]);for(const h of child){if(!parent.has(h)){childIssues.push({path:path.join('.'),spot:key,hand:h});}}}}}for(const [k,v] of Object.entries(node)){if(isObj(v))walk(path.concat(k),v);}}walk(['PreflopRanges'],data);console.log(JSON.stringify({sumIssueCount:sumIssues.length,dupIssueCount:dupIssues.length,childIssueCount:childIssues.length,sumIssues,dupIssues,childIssues},null,2));"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "run-temp-preflop-validator",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/tmp-validate-preflop-ranges.mjs"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "run-cash-100bb-validator",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/tmp-validate-cash-100bb.mjs"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "run-cash100bb-lineage-validator",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/tmp-validate-cash100bb-lineage.mjs"
+			],
+			"problemMatcher": []
+		}
+	]
+}
