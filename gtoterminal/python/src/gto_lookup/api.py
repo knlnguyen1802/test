@@ -134,7 +134,9 @@ class GTOLookup:
                 "preflop-ranges-heuristic-for-solution.js",
             )
             if os.path.exists(heuristic_path):
-                heuristic = load_js_object(heuristic_path, cfg.preflop.var)
+                heuristic = load_js_object(
+                    heuristic_path, "GTO.Data.PreflopRangesHeuristicSolution"
+                )
                 self._preflop = _deep_merge(self._preflop, heuristic)
 
         levels = list(bet_levels) if bet_levels else list(cfg.bet_levels.keys())
@@ -235,12 +237,12 @@ class GTOLookup:
         if table is None:
             return None
 
-        # Build the position key. RFI keys on the opener alone; the raise/3bet/
-        # 4bet spots key on `opener_other` — try both orders.
+        # Build the position key. Keys are hero_villain (hero = the seat whose
+        # range is stored, i.e. the one facing the action). RFI keys on hero alone.
         if spot == "rfi" or villain is None:
             candidates = [hero]
         else:
-            candidates = [f"{hero}_{villain}", f"{villain}_{hero}"]
+            candidates = [f"{hero}_{villain}"]
 
         entry = None
         used_key = None

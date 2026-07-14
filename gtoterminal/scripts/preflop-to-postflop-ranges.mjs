@@ -11,9 +11,9 @@
 //   preflop table each side is read from is listed explicitly in BET_LEVELS
 //   (scripts/postflop_config/matchups.mjs):
 //
-//     srp : agg open  = rfi[agg]                caller flat = vs_raise[agg_caller].call
-//     3bet: agg 3bet  = vs_raise[caller_agg].raise   caller call = vs_3bet[caller_agg].call
-//     4bet: agg 4bet  = vs_3bet[agg_caller].raise    caller call = vs_4bet[agg_caller].call
+//     srp : agg open  = rfi[agg]                     caller flat = vs_raise[caller_agg].call
+//     3bet: agg 3bet  = vs_raise[agg_caller].raise    caller call = vs_3bet[caller_agg].call
+//     4bet: agg 4bet  = vs_3bet[agg_caller].raise     caller call = vs_4bet[caller_agg].call
 //
 //   The two ranges are then placed into OOP / IP by postflop position
 //   (POSTFLOP_ORDER: blinds act first postflop, button last) — NOT by who is
@@ -89,15 +89,15 @@ function sortHands(set) {
 // `window.GTO.Data.PreflopRanges`; run it in a VM with a self-referential
 // `window` so both `window.GTO` and the bare `GTO` references resolve.
 // ---------------------------------------------------------------------------
-function loadPreflopRangesFile(path) {
+function loadPreflopRangesFile(path, globalKey = 'PreflopRanges') {
   if (!existsSync(path)) return null;
   const content = readFileSync(path, 'utf-8');
   const sandbox = {};
   sandbox.window = sandbox;               // window === global, so bare GTO works
   createContext(sandbox);
   runInContext(content, sandbox);
-  const ranges = sandbox.GTO?.Data?.PreflopRanges;
-  if (!ranges) throw new Error('Could not read GTO.Data.PreflopRanges from lookup file.');
+  const ranges = sandbox.GTO?.Data?.[globalKey];
+  if (!ranges) throw new Error(`Could not read GTO.Data.${globalKey} from lookup file.`);
   return ranges;
 }
 
@@ -119,7 +119,7 @@ function loadPreflopRanges() {
   const heuristicPath = join(PROJECT_ROOT, 'preflop-lookup', 'preflop-ranges-heuristic-for-input.js');
   const base = loadPreflopRangesFile(basePath);
   if (!base) throw new Error(`Preflop ranges not found: ${basePath}`);
-  const heuristic = loadPreflopRangesFile(heuristicPath);
+  const heuristic = loadPreflopRangesFile(heuristicPath, 'PreflopRangesHeuristicInput');
   return heuristic ? deepMerge(base, heuristic) : base;
 }
 

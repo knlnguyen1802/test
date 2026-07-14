@@ -102,7 +102,7 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_raise: {
-        UTG_MP: {
+        MP_UTG: {
           pure_raise: [
             'AA', 'KK', 'QQ', 'JJ', 'TT', 'AKs', 'AQs', 'AJs', 'ATs', 'A5s', 'A4s',
             'KQs', 'KJs', 'KTs',
@@ -119,7 +119,7 @@ GTO.Data.PreflopRanges = {
             'KQo': [0.5, 0, 0.5],
           }
         },
-        UTG_CO: {
+        CO_UTG: {
           pure_raise: [
             'AA', 'KK', 'QQ', 'JJ', 'TT', 'AKs', 'AQs', 'AJs', 'ATs', 'A5s', 'A4s',
             'KQs', 'KJs', 'KTs',
@@ -136,7 +136,7 @@ GTO.Data.PreflopRanges = {
             'KQo': [0.5, 0, 0.5],
           }
         },
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AQs','AKo','AQo','KQo'],
           pure_call: ['99','88','77','AJs','ATs','KQs','KJs','KTs','QJs','JTs'],
           mixed: {
@@ -158,7 +158,7 @@ GTO.Data.PreflopRanges = {
             'ATo': [0.5, 0, 0.5],
           }
         },
-        UTG_SB: {
+        SB_UTG: {
           pure_raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','KQs','AKo','AQo'],
           mixed: {
             '99': [0.6, 0, 0.4],
@@ -178,7 +178,7 @@ GTO.Data.PreflopRanges = {
             'JTs': [0.5, 0, 0.5],
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','33','22',
@@ -193,7 +193,7 @@ GTO.Data.PreflopRanges = {
             'QJo','QTo','JTo'
           ],
         },
-        MP_CO: {
+        CO_MP: {
           pure_raise: [
             'AA', 'KK', 'QQ', 'JJ', 'TT', 'AKs', 'AQs', 'AJs', 'ATs', 'A5s', 'A4s',
             'KQs', 'KJs', 'KTs',
@@ -215,7 +215,7 @@ GTO.Data.PreflopRanges = {
             '76s': [0.9, 0, 0.1],
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA', 'KK', 'QQ', 'AKs', 'AQs', 'AKo', 'AQo', 'KQo'],
           pure_call: ['99', '88', '77', 'AJs', 'ATs', 'KQs', 'KJs', 'KTs', 'QJs', 'JTs'],
           mixed: {
@@ -237,7 +237,7 @@ GTO.Data.PreflopRanges = {
             'ATo': [0.5, 0, 0.5],
           }
         },
-        MP_SB: {
+        SB_MP: {
           pure_raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','KQs','AKo','AQo'],
           mixed: {
             '99': [0.5, 0, 0.5],
@@ -260,7 +260,7 @@ GTO.Data.PreflopRanges = {
             'JTs': [0.5, 0, 0.5],
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','33','22',
@@ -277,7 +277,7 @@ GTO.Data.PreflopRanges = {
             'T9o'
           ],
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA', 'KK', 'QQ', 'AKs', 'AQs', 'AKo', 'AQo', 'KQo'],
           pure_call: ['99', '88', '77', 'AJs', 'ATs', 'KQs', 'KJs', 'KTs', 'QJs', 'JTs'],
           mixed: {
@@ -299,7 +299,7 @@ GTO.Data.PreflopRanges = {
             'ATo': [0.5, 0, 0.5],
           }
         },
-        CO_SB: {
+        SB_CO: {
           pure_raise: ['AA','KK','QQ','JJ','TT','AKs','AQs','AJs','KQs','AKo','AQo'],
           mixed: {
             '99': [0.45, 0, 0.55],
@@ -321,7 +321,7 @@ GTO.Data.PreflopRanges = {
             'JTs': [0.45, 0, 0.55],
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','A4s'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','33','22',
@@ -339,7 +339,7 @@ GTO.Data.PreflopRanges = {
             '98o'
           ],
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AJs','ATs','A5s','AKo','AQo'],
           mixed: {
             '88': [0.05, 0, 0.95],
@@ -373,7 +373,7 @@ GTO.Data.PreflopRanges = {
             '65s': [0.55, 0, 0.45],
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','A4s','A3s'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','33','22',
@@ -395,7 +395,7 @@ GTO.Data.PreflopRanges = {
             '98o','97o','87o','86o','76o','75o','65o','54o'
           ],
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','A4s'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','33','22',
@@ -718,30 +718,30 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_4bet: {
-        UTG_MP: {
+        MP_UTG: {
           pure_raise: ['AA','KK','AKs','AKo'],
           pure_call: ['QQ','AQs'],
         },
-        UTG_CO: {
+        CO_UTG: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ','JJ','AQs','KQs'],
           mixed: {
             'AJs': [0.3, 0.7, 0],
           }
         },
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ','AQs'],
         },
-        UTG_SB: {
+        SB_UTG: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ', 'AQs'],
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ', 'AQs'],
         },
-        MP_CO: {
+        CO_MP: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['AQs'],
           mixed: {
@@ -751,7 +751,7 @@ GTO.Data.PreflopRanges = {
             'KQs': [0.7, 0.3, 0],
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['AQs'],
           mixed: {
@@ -761,35 +761,35 @@ GTO.Data.PreflopRanges = {
             'KQs': [0.7, 0.3, 0],
           }
         },
-        MP_SB: {
+        SB_MP: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ', 'AQs'],
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ', 'AQs'],
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ', 'AQs'],
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ', 'AQs'],
         },
-        CO_SB: {
+        SB_CO: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ', 'AQs'],
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ', 'AQs'],
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ', 'AQs'],
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA', 'KK', 'AKs', 'AKo'],
           pure_call: ['QQ', 'AQs'],
         }
@@ -1114,7 +1114,7 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_raise: {
-        UTG_MP: {
+        MP_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','AQs'],
           mixed: {
@@ -1124,7 +1124,7 @@ GTO.Data.PreflopRanges = {
             'KQs': [0.33, 0.57, 0.1]
           }
         },
-        UTG_CO: {
+        CO_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','AQs','AJs','KQs'],
           mixed: {
@@ -1134,7 +1134,7 @@ GTO.Data.PreflopRanges = {
             'KJs': [0.38, 0.52, 0.1]
           }
         },
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','99','AQs','AJs','KQs'],
           mixed: {
@@ -1145,7 +1145,7 @@ GTO.Data.PreflopRanges = {
             'QJs': [0.38, 0.52, 0.1]
           }
         },
-        UTG_SB: {
+        SB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -1155,7 +1155,7 @@ GTO.Data.PreflopRanges = {
             'AJs': [0.33, 0.07, 0.6]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','AQs','AJs','ATs','A9s','A8s',
@@ -1193,7 +1193,7 @@ GTO.Data.PreflopRanges = {
             '43s': [0.38, 0.37, 0.25]
           }
         },
-        MP_CO: {
+        CO_MP: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','AQs','AJs','KQs'],
           mixed: {
@@ -1203,7 +1203,7 @@ GTO.Data.PreflopRanges = {
             'KJs': [0.33, 0.57, 0.1]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','99','AQs','AJs','KQs','QJs'],
           mixed: {
@@ -1213,7 +1213,7 @@ GTO.Data.PreflopRanges = {
             'KJs': [0.28, 0.57, 0.15]
           }
         },
-        MP_SB: {
+        SB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: ['JJ','TT','AQs'],
           mixed: {
@@ -1222,7 +1222,7 @@ GTO.Data.PreflopRanges = {
             'KQs': [0.33, 0.52, 0.15]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','66','AQs','AJs','ATs','A9s',
@@ -1277,7 +1277,7 @@ GTO.Data.PreflopRanges = {
             '54o': [0.58, 0.27, 0.15]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','AQs','AJs','ATs','KQs','KJs','QJs'
@@ -1290,7 +1290,7 @@ GTO.Data.PreflopRanges = {
             'JTs': [0.23, 0.57, 0.2]
           }
         },
-        CO_SB: {
+        SB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: ['JJ','TT','AQs'],
           mixed: {
@@ -1300,7 +1300,7 @@ GTO.Data.PreflopRanges = {
             'AQo': [0.18, 0.42, 0.4]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs',
@@ -1359,7 +1359,7 @@ GTO.Data.PreflopRanges = {
             '54o': [0.63, 0.27, 0.1]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','AQs'],
           pure_call: [
             'JJ','TT','99','88','AJs','ATs','KQs','KJs','QJs'
@@ -1371,7 +1371,7 @@ GTO.Data.PreflopRanges = {
             'KTs': [0.28, 0.52, 0.2]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs',
@@ -1456,7 +1456,7 @@ GTO.Data.PreflopRanges = {
             '43o': [0.73, 0.17, 0.1]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs',
@@ -1712,7 +1712,7 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_4bet: {
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -1721,7 +1721,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.55, 0.3, 0.15]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -1730,7 +1730,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.6, 0.25, 0.15]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -1739,7 +1739,7 @@ GTO.Data.PreflopRanges = {
             'JJ': [0.45, 0.4, 0.15]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -1748,7 +1748,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.5, 0.3, 0.2]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -1758,7 +1758,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.45, 0.35, 0.2]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -1767,7 +1767,7 @@ GTO.Data.PreflopRanges = {
             'JJ': [0.3, 0.5, 0.2]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','AKs'],
           mixed: {
@@ -1777,7 +1777,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.3, 0.45, 0.25]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -1787,7 +1787,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.4, 0.4, 0.2]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','AKs'],
           mixed: {
@@ -2110,7 +2110,7 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_raise: {
-        UTG_MP: {
+        MP_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: [],
           mixed: {
@@ -2118,7 +2118,7 @@ GTO.Data.PreflopRanges = {
             'JJ': [0.2, 0.02, 0.78]
           }
         },
-        UTG_CO: {
+        CO_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -2126,7 +2126,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.4, 0.02, 0.58]
           }
         },
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
@@ -2134,14 +2134,14 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.3, 0.02, 0.68]
           }
         },
-        UTG_SB: {
+        SB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
             'TT': [0.35, 0.02, 0.63]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [
             'TT','99','88','77','AQs','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs','KTs',
@@ -2178,7 +2178,7 @@ GTO.Data.PreflopRanges = {
             '43s': [0.45, 0.32, 0.23]
           }
         },
-        MP_CO: {
+        CO_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -2186,7 +2186,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.35, 0.02, 0.63]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
@@ -2194,14 +2194,14 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.25, 0.02, 0.73]
           }
         },
-        MP_SB: {
+        SB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
             'TT': [0.3, 0.02, 0.68]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','JJ','AQs'],
           pure_call: [
             'TT','99','88','77','66','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs','KTs',
@@ -2256,7 +2256,7 @@ GTO.Data.PreflopRanges = {
             '54o': [0.83, 0.12, 0.05]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [],
           mixed: {
@@ -2265,7 +2265,7 @@ GTO.Data.PreflopRanges = {
             'AQo': [0.38, 0.02, 0.6]
           }
         },
-        CO_SB: {
+        SB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [],
           mixed: {
@@ -2273,7 +2273,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.23, 0.02, 0.75]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','JJ','AQs'],
           pure_call: [
             'TT','99','88','77','66','55','44','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs',
@@ -2335,7 +2335,7 @@ GTO.Data.PreflopRanges = {
             '54o': [0.7, 0.2, 0.1]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','AQs','JJ'],
           pure_call: [],
           mixed: {
@@ -2347,7 +2347,7 @@ GTO.Data.PreflopRanges = {
             'ATs': [0.33, 0.02, 0.65]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','JJ','AQs','A4s'],
           pure_call: [
             'TT','99','88','77','66','55','44','AJs','ATs','A9s','A8s','A7s','A6s','A3s','A2s',
@@ -2436,7 +2436,7 @@ GTO.Data.PreflopRanges = {
             '43o': [0.78, 0.12, 0.1]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','JJ','AQs','A4s'],
           pure_call: [
             'TT','99','88','77','66','55','44','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs',
@@ -2628,7 +2628,7 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_4bet: {
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -2637,7 +2637,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.6, 0.25, 0.15]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -2645,7 +2645,7 @@ GTO.Data.PreflopRanges = {
             'AKs': [0.4, 0.4, 0.2]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -2654,7 +2654,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.5, 0.25, 0.25]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -2662,7 +2662,7 @@ GTO.Data.PreflopRanges = {
             'AKs': [0.3, 0.5, 0.2]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -2671,7 +2671,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.35, 0.4, 0.25]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -2679,7 +2679,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.4, 0.35, 0.25]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','AKs'],
           mixed: {
@@ -2688,7 +2688,7 @@ GTO.Data.PreflopRanges = {
             'TT': [0.4, 0.45, 0.15]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -2697,7 +2697,7 @@ GTO.Data.PreflopRanges = {
             'JJ': [0.25, 0.55, 0.2]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','AKs'],
           mixed: {
@@ -3026,7 +3026,7 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_raise: {
-        UTG_MP: {
+        MP_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: [],
           mixed: {
@@ -3034,7 +3034,7 @@ GTO.Data.PreflopRanges = {
             'JJ': [0.18, 0.02, 0.8]
           }
         },
-        UTG_CO: {
+        CO_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -3042,7 +3042,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.38, 0.02, 0.6]
           }
         },
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
@@ -3050,14 +3050,14 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.28, 0.02, 0.7]
           }
         },
-        UTG_SB: {
+        SB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
             'TT': [0.33, 0.02, 0.65]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','AQs','AJs','ATs','A9s','A8s',
@@ -3095,7 +3095,7 @@ GTO.Data.PreflopRanges = {
             '43s': [0.38, 0.37, 0.25]
           }
         },
-        MP_CO: {
+        CO_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -3103,7 +3103,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.33, 0.02, 0.65]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
@@ -3111,14 +3111,14 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.23, 0.02, 0.75]
           }
         },
-        MP_SB: {
+        SB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
             'TT': [0.28, 0.02, 0.7]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s'],
           pure_call: [
             'JJ','TT','99','88','77','66','AQs','AJs','ATs','A9s',
@@ -3172,7 +3172,7 @@ GTO.Data.PreflopRanges = {
             '54o': [0.78, 0.17, 0.05]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [],
           mixed: {
@@ -3180,14 +3180,14 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.18, 0.02, 0.8]
           }
         },
-        CO_SB: {
+        SB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [],
           mixed: {
             'AQs': [0.23, 0.02, 0.75]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs',
@@ -3245,7 +3245,7 @@ GTO.Data.PreflopRanges = {
             '54o': [0.68, 0.22, 0.1]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','AQs'],
           pure_call: [],
           mixed: {
@@ -3257,7 +3257,7 @@ GTO.Data.PreflopRanges = {
             'KQs': [0.23, 0.02, 0.75]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs',
@@ -3342,7 +3342,7 @@ GTO.Data.PreflopRanges = {
             '43o': [0.78, 0.12, 0.1]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs',
@@ -3530,7 +3530,7 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_4bet: {
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -3539,7 +3539,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.55, 0.3, 0.15]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -3547,7 +3547,7 @@ GTO.Data.PreflopRanges = {
             'AKs': [0.35, 0.45, 0.2]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -3556,7 +3556,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.45, 0.3, 0.25]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -3564,7 +3564,7 @@ GTO.Data.PreflopRanges = {
             'AKs': [0.3, 0.5, 0.2]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -3573,7 +3573,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.35, 0.4, 0.25]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -3581,7 +3581,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.4, 0.35, 0.25]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','AKs'],
           mixed: {
@@ -3590,7 +3590,7 @@ GTO.Data.PreflopRanges = {
             'TT': [0.4, 0.45, 0.15]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -3599,7 +3599,7 @@ GTO.Data.PreflopRanges = {
             'JJ': [0.25, 0.55, 0.2]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','AKs'],
           mixed: {
@@ -3913,7 +3913,7 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_raise: {
-        UTG_MP: {
+        MP_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: [],
           mixed: {
@@ -3921,7 +3921,7 @@ GTO.Data.PreflopRanges = {
             'JJ': [0.23, 0.02, 0.75]
           }
         },
-        UTG_CO: {
+        CO_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -3929,7 +3929,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.43, 0.02, 0.55]
           }
         },
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
@@ -3937,14 +3937,14 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.33, 0.02, 0.65]
           }
         },
-        UTG_SB: {
+        SB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
             'TT': [0.38, 0.02, 0.6]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [
             '99','88','77','AQs','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -3982,7 +3982,7 @@ GTO.Data.PreflopRanges = {
             '43s': [0.53, 0.27, 0.2]
           }
         },
-        MP_CO: {
+        CO_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -3990,7 +3990,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.38, 0.02, 0.6]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
@@ -3998,14 +3998,14 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.28, 0.02, 0.7]
           }
         },
-        MP_SB: {
+        SB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
             'TT': [0.33, 0.02, 0.65]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','JJ','AQs','TT'],
           pure_call: [
             '99','88','77','66','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -4061,7 +4061,7 @@ GTO.Data.PreflopRanges = {
             '54o': [0.88, 0.07, 0.05]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [],
           mixed: {
@@ -4070,7 +4070,7 @@ GTO.Data.PreflopRanges = {
             'AQo': [0.38, 0.02, 0.6]
           }
         },
-        CO_SB: {
+        SB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [],
           mixed: {
@@ -4078,7 +4078,7 @@ GTO.Data.PreflopRanges = {
             'AQs': [0.23, 0.02, 0.75]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: [
             'AA','KK','QQ','AKs','AKo','A5s','JJ','AQs','TT','AJs',
             'AQo'
@@ -4144,7 +4144,7 @@ GTO.Data.PreflopRanges = {
             '54o': [0.73, 0.17, 0.1]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','AQs','JJ'],
           pure_call: [],
           mixed: {
@@ -4156,7 +4156,7 @@ GTO.Data.PreflopRanges = {
             'ATs': [0.33, 0.02, 0.65]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: [
             'AA','KK','QQ','AKs','AKo','A5s','JJ','AQs','A4s','TT',
             'AJs','AQo','A3s'
@@ -4249,7 +4249,7 @@ GTO.Data.PreflopRanges = {
             '43o': [0.78, 0.12, 0.1]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: [
             'AA','KK','QQ','AKs','AKo','A5s','JJ','AQs','A4s','TT',
             'AJs','A3s','AQo'
@@ -4435,7 +4435,7 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_4bet: {
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -4443,7 +4443,7 @@ GTO.Data.PreflopRanges = {
             'AKs': [0.4, 0.45, 0.15]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -4451,7 +4451,7 @@ GTO.Data.PreflopRanges = {
             'AKs': [0.45, 0.4, 0.15]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -4459,7 +4459,7 @@ GTO.Data.PreflopRanges = {
             'AKs': [0.25, 0.5, 0.25]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -4467,7 +4467,7 @@ GTO.Data.PreflopRanges = {
             'AKs': [0.3, 0.5, 0.2]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -4476,7 +4476,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.4, 0.35, 0.25]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -4484,7 +4484,7 @@ GTO.Data.PreflopRanges = {
             'AKo': [0.45, 0.35, 0.2]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -4493,7 +4493,7 @@ GTO.Data.PreflopRanges = {
             'JJ': [0.25, 0.55, 0.2]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -4502,7 +4502,7 @@ GTO.Data.PreflopRanges = {
             'JJ': [0.3, 0.5, 0.2]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -4793,7 +4793,7 @@ GTO.Data.PreflopRanges = {
         }
       },
       vs_raise: {
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: [
             'JJ','TT','99','88','AQs','AJs','ATs','A5s','AKo','AQo','KQs','KJs','KTs',
@@ -4857,7 +4857,7 @@ GTO.Data.PreflopRanges = {
             '96s': [0.1, 0.7, 0.2]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -4913,7 +4913,7 @@ GTO.Data.PreflopRanges = {
             '54o': [0.45, 0.35, 0.2]
           }
         },
-        UTG_MP: {
+        MP_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','AQs'],
           mixed: {
@@ -4922,7 +4922,7 @@ GTO.Data.PreflopRanges = {
             'AJs': [0.3, 0.6, 0.1]
           }
         },
-        UTG_CO: {
+        CO_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','99','AQs','AJs','KQs'],
           mixed: {
@@ -4930,7 +4930,7 @@ GTO.Data.PreflopRanges = {
             'ATs': [0.35, 0.55, 0.1]
           }
         },
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','99','88','AQs','AJs','KQs','QJs'],
           mixed: {
@@ -4938,12 +4938,12 @@ GTO.Data.PreflopRanges = {
             'ATs': [0.3, 0.6, 0.1]
           }
         },
-        UTG_SB: {
+        SB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: ['JJ','TT','AQs','99'],
           mixed: {}
         },
-        MP_CO: {
+        CO_MP: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','99','AQs','AJs','KQs'],
           mixed: {
@@ -4951,19 +4951,19 @@ GTO.Data.PreflopRanges = {
             'ATs': [0.35, 0.55, 0.1]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','99','88','AQs','AJs','KQs','QJs','JTs'],
           mixed: {
             'AKo': [0.1, 0.45, 0.45]
           }
         },
-        MP_SB: {
+        SB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: ['JJ','TT','99','AQs'],
           mixed: {}
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: [
             'JJ','TT','99','88','77','66','AQs','AJs','ATs','A9s','A8s','A7s','A6s','KQs',
@@ -5016,22 +5016,22 @@ GTO.Data.PreflopRanges = {
             '54o': [0.25, 0.45, 0.3]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: ['JJ','TT','99','88','AQs','AJs','ATs','KQs','KJs','QJs','JTs'],
           mixed: {}
         },
-        CO_SB: {
+        SB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: ['JJ','TT','99','AQs','AJs','KQs'],
           mixed: {}
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','AQs'],
           pure_call: ['JJ','TT','99','88','AJs','ATs','KQs','KJs','QJs','JTs'],
           mixed: {}
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -5113,7 +5113,7 @@ GTO.Data.PreflopRanges = {
             '43o': [0.6, 0.25, 0.15]
           }
         },
-SB_BB: {
+BB_SB: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -5420,7 +5420,7 @@ SB_BB: {
         }
       },
       vs_4bet: {
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -5429,7 +5429,7 @@ SB_BB: {
             'AKo': [0.55, 0.3, 0.15]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -5438,7 +5438,7 @@ SB_BB: {
             'AKo': [0.6, 0.25, 0.15]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -5448,7 +5448,7 @@ SB_BB: {
             'AQs': [0.5, 0.35, 0.15]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -5457,7 +5457,7 @@ SB_BB: {
             'JJ': [0.45, 0.4, 0.15]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','AKs'],
           mixed: {
@@ -5467,7 +5467,7 @@ SB_BB: {
             'AQs': [0.3, 0.5, 0.2]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -5477,7 +5477,7 @@ SB_BB: {
             'AQs': [0.45, 0.4, 0.15]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','JJ','AKs'],
           mixed: {
@@ -5489,7 +5489,7 @@ SB_BB: {
             'A4s': [0.2, 0.05, 0.75]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','AKs'],
           mixed: {
@@ -5500,7 +5500,7 @@ SB_BB: {
             'A5s': [0.2, 0.1, 0.7]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','JJ','AKs'],
           mixed: {
@@ -5814,7 +5814,7 @@ SB_BB: {
         }
       },
       vs_raise: {
-        UTG_MP: {
+        MP_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','AQs'],
           mixed: {
@@ -5824,7 +5824,7 @@ SB_BB: {
             'KQs': [0.35, 0.55, 0.1]
           }
         },
-        UTG_CO: {
+        CO_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','AQs','AJs','KQs'],
           mixed: {
@@ -5834,7 +5834,7 @@ SB_BB: {
             'KJs': [0.4, 0.5, 0.1]
           }
         },
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','99','AQs','AJs','KQs'],
           mixed: {
@@ -5845,7 +5845,7 @@ SB_BB: {
             'QJs': [0.4, 0.5, 0.1]
           }
         },
-        UTG_SB: {
+        SB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -5855,7 +5855,7 @@ SB_BB: {
             'AJs': [0.35, 0.05, 0.6]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','AQs','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs',
@@ -5891,7 +5891,7 @@ SB_BB: {
             '43s': [0.4, 0.35, 0.25]
           }
         },
-        MP_CO: {
+        CO_MP: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','AQs','AJs','KQs'],
           mixed: {
@@ -5901,7 +5901,7 @@ SB_BB: {
             'KJs': [0.35, 0.55, 0.1]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: ['JJ','TT','99','AQs','AJs','KQs','QJs'],
           mixed: {
@@ -5911,7 +5911,7 @@ SB_BB: {
             'KJs': [0.3, 0.55, 0.15]
           }
         },
-        MP_SB: {
+        SB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: ['JJ','TT','AQs'],
           mixed: {
@@ -5920,7 +5920,7 @@ SB_BB: {
             'KQs': [0.35, 0.5, 0.15]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','66','AQs','AJs','ATs','A9s','A8s','A7s','A6s','KQs',
@@ -5973,7 +5973,7 @@ SB_BB: {
             '54o': [0.6, 0.25, 0.15]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: ['JJ','TT','99','88','AQs','AJs','ATs','KQs','KJs','QJs'],
           mixed: {
@@ -5984,7 +5984,7 @@ SB_BB: {
             'JTs': [0.25, 0.55, 0.2]
           }
         },
-        CO_SB: {
+        SB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: ['JJ','TT','AQs'],
           mixed: {
@@ -5994,7 +5994,7 @@ SB_BB: {
             'AQo': [0.2, 0.4, 0.4]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -6050,7 +6050,7 @@ SB_BB: {
             '54o': [0.65, 0.25, 0.1]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','AQs'],
           pure_call: ['JJ','TT','99','88','AJs','ATs','KQs','KJs','QJs'],
           mixed: {
@@ -6060,7 +6060,7 @@ SB_BB: {
             'KTs': [0.3, 0.5, 0.2]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -6142,7 +6142,7 @@ SB_BB: {
             '43o': [0.75, 0.15, 0.1]
           }
         },
-SB_BB: {
+BB_SB: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -6412,7 +6412,7 @@ SB_BB: {
         }
       },
       vs_4bet: {
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -6421,7 +6421,7 @@ SB_BB: {
             'AKo': [0.5, 0.35, 0.15]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -6430,7 +6430,7 @@ SB_BB: {
             'AKo': [0.55, 0.3, 0.15]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -6439,7 +6439,7 @@ SB_BB: {
             'JJ': [0.4, 0.45, 0.15]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -6448,7 +6448,7 @@ SB_BB: {
             'AKo': [0.4, 0.35, 0.25]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -6458,7 +6458,7 @@ SB_BB: {
             'AQs': [0.4, 0.4, 0.2]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -6467,7 +6467,7 @@ SB_BB: {
             'JJ': [0.3, 0.5, 0.2]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','AKs'],
           mixed: {
@@ -6477,7 +6477,7 @@ SB_BB: {
             'AQs': [0.25, 0.5, 0.25]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -6487,7 +6487,7 @@ SB_BB: {
             'AQs': [0.35, 0.45, 0.2]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ','AKs'],
           mixed: {
@@ -6808,7 +6808,7 @@ SB_BB: {
         }
       },
       vs_raise: {
-        UTG_MP: {
+        MP_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: [],
           mixed: {
@@ -6816,7 +6816,7 @@ SB_BB: {
             'JJ': [0.2, 0, 0.8]
           }
         },
-        UTG_CO: {
+        CO_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -6824,7 +6824,7 @@ SB_BB: {
             'AQs': [0.4, 0, 0.6]
           }
         },
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
@@ -6832,14 +6832,14 @@ SB_BB: {
             'AQs': [0.3, 0, 0.7]
           }
         },
-        UTG_SB: {
+        SB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
             'TT': [0.35, 0, 0.65]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [
             'JJ','TT','99','88','77','AQs','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs',
@@ -6875,7 +6875,7 @@ SB_BB: {
             '43s': [0.4, 0.35, 0.25]
           }
         },
-        MP_CO: {
+        CO_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -6883,7 +6883,7 @@ SB_BB: {
             'AQs': [0.35, 0, 0.65]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
@@ -6891,14 +6891,14 @@ SB_BB: {
             'AQs': [0.25, 0, 0.75]
           }
         },
-        MP_SB: {
+        SB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
             'TT': [0.3, 0, 0.7]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s'],
           pure_call: [
             'JJ','TT','99','88','77','66','AQs','AJs','ATs','A9s','A8s','A7s','A6s','KQs',
@@ -6950,7 +6950,7 @@ SB_BB: {
             '54o': [0.8, 0.15, 0.05]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [],
           mixed: {
@@ -6958,14 +6958,14 @@ SB_BB: {
             'AQs': [0.2, 0, 0.8]
           }
         },
-        CO_SB: {
+        SB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [],
           mixed: {
             'AQs': [0.25, 0, 0.75]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -7021,7 +7021,7 @@ SB_BB: {
             '54o': [0.7, 0.2, 0.1]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','AQs'],
           pure_call: [],
           mixed: {
@@ -7033,7 +7033,7 @@ SB_BB: {
             'KQs': [0.25, 0, 0.75]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -7116,7 +7116,7 @@ SB_BB: {
             '43o': [0.8, 0.1, 0.1]
           }
         },
-SB_BB: {
+BB_SB: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s'],
           pure_call: [
             'JJ','TT','99','88','77','66','55','44','AQs','AJs','ATs','A9s','A8s','A7s','A6s',
@@ -7299,7 +7299,7 @@ SB_BB: {
         }
       },
       vs_4bet: {
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -7308,7 +7308,7 @@ SB_BB: {
             'AKo': [0.6, 0.25, 0.15]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -7316,7 +7316,7 @@ SB_BB: {
             'AKs': [0.4, 0.4, 0.2]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -7324,7 +7324,7 @@ SB_BB: {
             'AKs': [0.25, 0.5, 0.25]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -7332,7 +7332,7 @@ SB_BB: {
             'AKs': [0.35, 0.45, 0.2]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -7341,7 +7341,7 @@ SB_BB: {
             'AKo': [0.4, 0.35, 0.25]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -7349,7 +7349,7 @@ SB_BB: {
             'AKo': [0.45, 0.3, 0.25]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -7358,7 +7358,7 @@ SB_BB: {
             'AKo': [0.3, 0.45, 0.25]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -7367,7 +7367,7 @@ SB_BB: {
             'JJ': [0.3, 0.5, 0.2]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -7676,7 +7676,7 @@ SB_BB: {
         }
       },
       vs_raise: {
-        UTG_MP: {
+        MP_UTG: {
           pure_raise: ['AA','KK','QQ','AKs'],
           pure_call: [],
           mixed: {
@@ -7684,7 +7684,7 @@ SB_BB: {
             'JJ': [0.25, 0, 0.75]
           }
         },
-        UTG_CO: {
+        CO_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -7692,7 +7692,7 @@ SB_BB: {
             'AQs': [0.45, 0, 0.55]
           }
         },
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
@@ -7700,14 +7700,14 @@ SB_BB: {
             'AQs': [0.35, 0, 0.65]
           }
         },
-        UTG_SB: {
+        SB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
             'TT': [0.4, 0, 0.6]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [
             '99','88','77','AQs','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs','KTs','K9s',
@@ -7743,7 +7743,7 @@ SB_BB: {
             '43s': [0.55, 0.25, 0.2]
           }
         },
-        MP_CO: {
+        CO_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo'],
           pure_call: [],
           mixed: {
@@ -7751,7 +7751,7 @@ SB_BB: {
             'AQs': [0.4, 0, 0.6]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
@@ -7759,14 +7759,14 @@ SB_BB: {
             'AQs': [0.3, 0, 0.7]
           }
         },
-        MP_SB: {
+        SB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ'],
           pure_call: [],
           mixed: {
             'TT': [0.35, 0, 0.65]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','JJ','AQs','TT'],
           pure_call: [
             '99','88','77','66','AJs','ATs','A9s','A8s','A7s','A6s','KQs','KJs','KTs','K9s',
@@ -7820,7 +7820,7 @@ SB_BB: {
             '54o': [0.9, 0.05, 0.05]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [],
           mixed: {
@@ -7829,7 +7829,7 @@ SB_BB: {
             'AQo': [0.4, 0, 0.6]
           }
         },
-        CO_SB: {
+        SB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','JJ','TT'],
           pure_call: [],
           mixed: {
@@ -7837,7 +7837,7 @@ SB_BB: {
             'AQs': [0.25, 0, 0.75]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','JJ','AQs','TT','AJs','AQo'],
           pure_call: [
             '99','88','77','66','55','44','ATs','A9s','A8s','A7s','A6s','KQs','KJs','KTs',
@@ -7898,7 +7898,7 @@ SB_BB: {
             '54o': [0.75, 0.15, 0.1]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','AQs','JJ'],
           pure_call: [],
           mixed: {
@@ -7910,7 +7910,7 @@ SB_BB: {
             'ATs': [0.35, 0, 0.65]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','JJ','AQs','A4s','TT','AJs','AQo','A3s'],
           pure_call: [
             '99','88','77','66','55','44','ATs','A9s','A8s','A7s','A6s','A2s','KQs','KJs',
@@ -7998,7 +7998,7 @@ SB_BB: {
             '43o': [0.8, 0.1, 0.1]
           }
         },
-SB_BB: {
+BB_SB: {
           pure_raise: ['AA','KK','QQ','AKs','AKo','A5s','JJ','AQs','A4s','TT','AJs','A3s','AQo'],
           pure_call: [
             '99','88','77','66','55','44','ATs','A9s','A8s','A7s','A6s','KQs','KJs','KTs',
@@ -8179,7 +8179,7 @@ SB_BB: {
         }
       },
       vs_4bet: {
-        UTG_BTN: {
+        BTN_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -8187,7 +8187,7 @@ SB_BB: {
             'AKs': [0.45, 0.4, 0.15]
           }
         },
-        UTG_BB: {
+        BB_UTG: {
           pure_raise: ['AA'],
           pure_call: ['KK'],
           mixed: {
@@ -8195,7 +8195,7 @@ SB_BB: {
             'AKs': [0.5, 0.35, 0.15]
           }
         },
-        MP_BTN: {
+        BTN_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -8203,7 +8203,7 @@ SB_BB: {
             'AKs': [0.3, 0.5, 0.2]
           }
         },
-        MP_BB: {
+        BB_MP: {
           pure_raise: ['AA','KK'],
           pure_call: [],
           mixed: {
@@ -8211,7 +8211,7 @@ SB_BB: {
             'AKs': [0.35, 0.45, 0.2]
           }
         },
-        CO_BTN: {
+        BTN_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -8220,7 +8220,7 @@ SB_BB: {
             'AKo': [0.45, 0.3, 0.25]
           }
         },
-        CO_BB: {
+        BB_CO: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -8228,7 +8228,7 @@ SB_BB: {
             'AKo': [0.5, 0.3, 0.2]
           }
         },
-        BTN_SB: {
+        SB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -8237,7 +8237,7 @@ SB_BB: {
             'JJ': [0.25, 0.55, 0.2]
           }
         },
-        BTN_BB: {
+        BB_BTN: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {
@@ -8246,7 +8246,7 @@ SB_BB: {
             'JJ': [0.3, 0.5, 0.2]
           }
         },
-        SB_BB: {
+        BB_SB: {
           pure_raise: ['AA','KK'],
           pure_call: ['QQ'],
           mixed: {

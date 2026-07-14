@@ -28,12 +28,21 @@ GTO.PreflopSolverCache = {
       }
     }
 
-    // Fall back to curated ranges
+    // Fall back to curated base ranges
     if (GTO.Data.PreflopRanges) {
       var curated = this._resolve(GTO.Data.PreflopRanges, format, depth, context, positionKey);
       if (curated) {
         curated._source = 'curated';
         return curated;
+      }
+    }
+
+    // Fall back to the heuristic extension overlay (missing multiway spots)
+    if (GTO.Data.PreflopRangesHeuristicSolution) {
+      var ext = this._resolve(GTO.Data.PreflopRangesHeuristicSolution, format, depth, context, positionKey);
+      if (ext) {
+        ext._source = 'heuristic';
+        return ext;
       }
     }
 

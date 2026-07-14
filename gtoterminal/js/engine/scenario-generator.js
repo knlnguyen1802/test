@@ -31,7 +31,7 @@ GTO.Engine.ScenarioGenerator = {
       var earlierPositions = GTO.Data.POSITIONS.slice(0, posIdx);
       if (earlierPositions.length === 0) earlierPositions = ['UTG'];
       villainPosition = GTO.Utils.randPick(earlierPositions);
-      positionKey = villainPosition + '_' + position;
+      positionKey = position + '_' + villainPosition;
     } else if (actionContext === 'vs_3bet') {
       // Hero opened, villain 3bet from later position
       var posIdx = GTO.Data.POSITIONS.indexOf(position);
@@ -40,13 +40,13 @@ GTO.Engine.ScenarioGenerator = {
       villainPosition = GTO.Utils.randPick(laterPositions);
       positionKey = position + '_' + villainPosition;
     } else if (actionContext === 'vs_4bet') {
-      // Villain opened from earlier position, hero 3bet, villain 4bets
-      // Key format: opener_hero (same as vs_raise)
+      // Villain opened from earlier position, hero 3bet, villain 4bets.
+      // Key format: hero_villain (hero = 3bettor).
       var posIdx = GTO.Data.POSITIONS.indexOf(position);
       var earlierPositions = GTO.Data.POSITIONS.slice(0, posIdx);
       if (earlierPositions.length === 0) earlierPositions = ['UTG'];
       villainPosition = GTO.Utils.randPick(earlierPositions);
-      positionKey = villainPosition + '_' + position;
+      positionKey = position + '_' + villainPosition;
     }
 
     var cards = GTO.Engine.Deck.handToCards(hand);

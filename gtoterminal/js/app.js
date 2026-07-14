@@ -535,8 +535,8 @@ GTO.App = {
       if (villainRow) villainRow.classList.remove('hidden');
       var posKey = scenario.positionKey || '';
       var parts = posKey.split('_');
-      // vs_raise: villain_hero, vs_3bet: hero_villain, vs_4bet: villain_hero
-      var villain = scenario.actionContext === 'vs_3bet' ? parts[1] : parts[0];
+      // All facing-action keys are hero_villain (hero = position, villain second).
+      var villain = parts[1];
       if (villain) setToggle('explore-villain', villain);
     }
 
@@ -2250,8 +2250,8 @@ GTO.App = {
       if (actionCtx === 'vs_raise' || actionCtx === 'vs_3bet' || actionCtx === 'vs_4bet') {
         var villainEl = document.querySelector('#explore-villain .toggle-option.active');
         var villain = villainEl ? villainEl.getAttribute('data-value') : 'UTG';
-        // vs_raise: villain_hero, vs_3bet: hero_villain, vs_4bet: villain_hero
-        positionKey = actionCtx === 'vs_3bet' ? position + '_' + villain : villain + '_' + position;
+        // All facing-action keys are hero_villain.
+        positionKey = position + '_' + villain;
       }
 
       // Build range data for the scenario
@@ -2383,7 +2383,7 @@ GTO.App = {
     if (actionCtx !== 'rfi') {
       var villainEl = document.querySelector('#explore-villain .toggle-option.active');
       var villain = villainEl ? villainEl.getAttribute('data-value') : 'UTG';
-      positionKey = actionCtx === 'vs_3bet' ? position + '_' + villain : villain + '_' + position;
+      positionKey = position + '_' + villain;
     }
 
     // Show progress
