@@ -1,5 +1,9 @@
+.vscode
+
 /last_solution
 /legacy_solution
+
+/gtoterminal/js/data/river/
 
 solver-native/target/
 solver-native/Cargo.lock

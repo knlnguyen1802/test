@@ -38,6 +38,7 @@
 // ============================================================================
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { createHash } from 'node:crypto';
 import { execSync, fork, spawn } from 'child_process';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join } from 'path';
@@ -67,6 +68,10 @@ const IS_CHILD = hasArg('child');
 // --force: re-solve and overwrite even when a solution already exists on disk
 // (default is an incremental build that skips already-solved spots).
 const FORCE = hasArg('force');
+// --update-accuracy: when the core seed (board + ranges) is unchanged but the
+// accuracy target changed, re-solve to hit the new target. Without this flag,
+// only changes to board/ranges trigger a re-solve.
+const UPDATE_ACCURACY = hasArg('update-accuracy');
 // Turn + river extraction are ON by default. Disable with --no-turn / --no-river.
 // (River always requires turn, so --no-turn is ignored while river is enabled.)
 const EXTRACT_RIVER = !hasArg('no-river');
@@ -99,6 +104,20 @@ const EFFECTIVE_STACK = DEPTH_CFG.stack;
 // every other case (incl. srp/3bet/4bet) gets an upper-cased variable suffix.
 const FILE_SUFFIX = DEPTH === '100bb' ? '' : `-${DEPTH}`;
 const VAR_SUFFIX = DEPTH === '100bb' ? '' : '_' + DEPTH.toUpperCase();
+
+// ---------------------------------------------------------------------------
+// Seed hashing for incremental skip
+// ---------------------------------------------------------------------------
+// minimal_hash: board + ranges — the core seed; if this changes, the solution
+//   is fundamentally different and must be re-solved.
+// full_hash: minimal_hash + target exploitability — catches accuracy-target
+//   changes. Only checked when --update-accuracy is passed.
+function computeSeedHashes(board, oopRange, ipRange) {
+  const core = board.join('') + '|' + oopRange + '|' + ipRange;
+  const minimal = createHash('sha256').update(core).digest('hex').slice(0, 16);
+  const full = createHash('sha256').update(core + '|' + TARGET_EXPLOIT_PCT).digest('hex').slice(0, 16);
+  return { minimal, full };
+}
 
 // ---------------------------------------------------------------------------
 // Card / Range utilities
@@ -983,16 +1002,22 @@ async function main() {
       spotNum++;
       const key = flopDef.label;
 
-      // Skip if already solved with nodes (incremental build). --force re-solves.
+      // Skip if seed hashes match existing solution. --force overrides.
+      // Default: re-solve only when board or ranges change (minimal_hash).
+      // --update-accuracy: also re-solve when the accuracy target changes.
       const existing = solutions[matchupKey][key];
       const existingTurn = EXTRACT_TURN ? (turnSolutions[matchupKey] || {})[key] : null;
+      const hashes = computeSeedHashes(flopDef.board, matchup.oop, matchup.ip);
+      const minimalMatch = existing && existing._minimal_hash === hashes.minimal;
+      const fullMatch = minimalMatch && existing._full_hash === hashes.full;
+      const hashOk = UPDATE_ACCURACY ? fullMatch : minimalMatch;
       const hasFlopNodes = existing && !existing.error && existing.nodes;
       const hasTurnNodes = !EXTRACT_TURN || (existingTurn && existingTurn.lines);
       const hasRiverNodes = !EXTRACT_RIVER || existsSync(riverBoardPath(matchupKey, key));
-      if (!FORCE && hasFlopNodes && hasTurnNodes && hasRiverNodes && !FILTER_BOARD && !FILTER_MATCHUP) {
+      if (!FORCE && hashOk && hasFlopNodes && hasTurnNodes && hasRiverNodes) {
         skipped++;
         const turnInfo = existingTurn ? `, turn_lines=${Object.keys(existingTurn.lines || {}).length}` : '';
-        console.log(`[precompute] [${spotNum}/${totalSpots}] ${matchupKey}/${key} — already solved (${Object.keys(existing.nodes).length + 1} nodes${turnInfo}), skipping`);
+        console.log(`[precompute] [${spotNum}/${totalSpots}] ${matchupKey}/${key} — seed unchanged (${Object.keys(existing.nodes).length + 1} nodes${turnInfo}), skipping`);
         continue;
       }
 
@@ -1017,6 +1042,8 @@ async function main() {
         const entry = {
           board: flopDef.board.join(''),
           texture: flopDef.texture,
+          _minimal_hash: hashes.minimal,
+          _full_hash: hashes.full,
           actions: result.actions,
           player: result.player,
           numActions: result.numActions,
