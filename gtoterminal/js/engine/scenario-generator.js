@@ -126,7 +126,7 @@ GTO.Engine.ScenarioGenerator = {
       // Pick matchup from config or random
       var matchupKeys = config.matchups ||
         (GTO.Data.PostflopMatchups ? Object.keys(GTO.Data.PostflopMatchups) : []);
-      if (matchupKeys.length === 0) matchupKeys = ['SB_vs_BB'];
+      if (matchupKeys.length === 0) matchupKeys = ['SB_BB'];
       matchupKey = GTO.Utils.randPick(matchupKeys);
       matchup = GTO.Data.PostflopMatchups[matchupKey];
 

@@ -2575,10 +2575,10 @@ GTO.App = {
 
   _positionToMatchup: function(position) {
     var map = {
-      'UTG': 'UTG_vs_BB', 'MP': 'UTG_vs_BB', 'CO': 'CO_vs_BB',
-      'BTN': 'BTN_vs_BB', 'SB': 'SB_vs_BB'
+      'UTG': 'UTG_BB', 'MP': 'UTG_BB', 'CO': 'CO_BB',
+      'BTN': 'BTN_BB', 'SB': 'SB_BB'
     };
-    return map[position] || 'BTN_vs_BB';
+    return map[position] || 'BTN_BB';
   },
 
   _transitionToPostflopExplore: function() {
@@ -3119,7 +3119,7 @@ GTO.App = {
     var matchupEl = document.querySelector('#solver-matchup .toggle-option.active');
 
     var depth = depthEl ? depthEl.getAttribute('data-value') : '100bb';
-    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_vs_BB';
+    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_BB';
 
     // Board from card picker (need at least 3 = flop)
     var boardCards = this._selectedBoardCards || [];
@@ -3311,7 +3311,7 @@ GTO.App = {
 
     // ── Update the range matrix with postflop data ──
     var matchupEl = document.querySelector('#solver-matchup .toggle-option.active');
-    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_vs_BB';
+    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_BB';
     var matchup = GTO.Data.PostflopMatchups ? GTO.Data.PostflopMatchups[matchupKey] : null;
     if (matchup) {
       var rangeData = this._buildPostflopRangeDataFromCache(cached, matchup);
@@ -3551,7 +3551,7 @@ GTO.App = {
 
     // ── OOP Range Composition ──
     var matchupEl = document.querySelector('#solver-matchup .toggle-option.active');
-    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_vs_BB';
+    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_BB';
     this._renderSolverComposition(boardCards, matchupKey);
   },
 

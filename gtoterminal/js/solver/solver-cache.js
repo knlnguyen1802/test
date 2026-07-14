@@ -183,12 +183,16 @@ GTO.SolverCache = (function() {
 
   // Map of (oopPos, ipPos) -> matchup key in solutions
   var MATCHUP_MAP = {
-    'SB_BB': 'SB_vs_BB',
-    'BTN_BB': 'BTN_vs_BB',
-    'CO_BB': 'CO_vs_BB',
-    'UTG_BB': 'UTG_vs_BB',
-    'SB_BTN': 'BTN_vs_SB',   // SB 3-bet pot: SB is OOP
-    'BTN_SB': 'BTN_vs_SB'    // alias
+    'SB_BB': 'SB_BB',
+    'BB_SB': 'SB_BB',
+    'BTN_BB': 'BTN_BB',
+    'BB_BTN': 'BTN_BB',
+    'CO_BB': 'CO_BB',
+    'BB_CO': 'CO_BB',
+    'UTG_BB': 'UTG_BB',
+    'BB_UTG': 'UTG_BB',
+    'SB_BTN': 'BTN_SB',   // SB 3-bet pot: SB is OOP
+    'BTN_SB': 'BTN_SB'    // alias
   };
 
   function findMatchup(oopPos, ipPos) {
@@ -216,7 +220,7 @@ GTO.SolverCache = (function() {
      *   board: 'Ah7d2c',          // original board string
      *   matchedBoard: 'A72r',     // which pre-computed board was matched
      *   texture: 'dry_rainbow',   // board texture category
-     *   matchup: 'SB_vs_BB',      // position matchup key
+     *   matchup: 'SB_BB',         // position matchup key
      *   exact: false,             // whether board was an exact match
      *   actions: 'Check:0/Bet:33/Bet:67',
      *   strategy: [0.45, 0.35, 0.20],  // aggregate frequencies for each action
@@ -276,7 +280,7 @@ GTO.SolverCache = (function() {
 
     /**
      * Get all available matchups in the cache.
-     * @returns {string[]} matchup keys like ['SB_vs_BB', 'BTN_vs_BB', ...]
+     * @returns {string[]} matchup keys like ['SB_BB', 'BTN_BB', ...]
      */
     getMatchups: function() {
       if (!GTO.Data || !GTO.Data.PostflopSolutions) return [];
@@ -297,7 +301,7 @@ GTO.SolverCache = (function() {
 
     /**
      * Get a specific pre-computed solution by matchup and board label.
-     * @param {string} matchupKey - e.g. 'SB_vs_BB'
+     * @param {string} matchupKey - e.g. 'SB_BB'
      * @param {string} boardLabel - e.g. 'A72r'
      * @returns {object|null}
      */

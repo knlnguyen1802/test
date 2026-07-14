@@ -29,7 +29,7 @@ GTO.Engine.PostflopLookup = {
    * @param {string}   p.handStrength   - classified hand strength (for heuristic fallback)
    * @param {number}   p.spr            - stack-to-pot ratio (selects the solved case)
    * @param {string[]} p.boardCards     - actual board cards e.g. ['Ac','7d','2h']
-   * @param {string}   p.matchup        - e.g. 'SB_vs_BB' (required for solver lookup)
+   * @param {string}   p.matchup        - e.g. 'SB_BB' (required for solver lookup)
    * @param {string}   p.case           - e.g. 'srp'/'3bet'/'4bet' (optional, else resolved from SPR)
    * @returns {{ freqs: Object, source: string, solverData: Object|null, actions: Array|null }}
    */
