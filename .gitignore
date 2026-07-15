@@ -5,8 +5,8 @@
 
 /gtoterminal/js/data/river/
 
-solver-native/target/
-solver-native/Cargo.lock
+/gtoterminal/solver-native/target/
+/gotterminal/solver-native/Cargo.lock
 postflop-solver-main/target/
 postflop-solver-main/Cargo.lock
 solver-preflop/pkg/
