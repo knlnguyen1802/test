@@ -1028,6 +1028,20 @@ async function main() {
         continue;
       }
 
+      // Diagnostic: log why this spot needs re-solving
+      if (existing) {
+        const failing = [];
+        if (FORCE) failing.push('--force');
+        if (!minimalMatch) failing.push(`seed_mismatch (stored=${existing._minimal_hash || 'none'} computed=${hashes.minimal})`);
+        else if (!fullMatch) failing.push(`accuracy_mismatch (stored=${existing._full_hash || 'none'} computed=${hashes.full})`);
+        if (!hasFlopNodes) failing.push(existing.error ? `flop_error=${existing.error}` : 'flop_nodes=missing');
+        if (!hasTurnNodes) failing.push('turn_nodes=missing');
+        if (!hasRiverNodes) failing.push('river_file=missing');
+        if (failing.length > 0) {
+          console.log(`[precompute] [${spotNum}/${totalSpots}] ${matchupKey}/${key} — re-solving (${failing.join(', ')})`);
+        }
+      }
+
       const startTime = Date.now();
       console.log(`[precompute] [${spotNum}/${totalSpots}] ${matchupKey}/${key} — solving...`);
 
