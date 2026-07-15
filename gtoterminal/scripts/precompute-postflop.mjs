@@ -1013,7 +1013,14 @@ async function main() {
       const hashOk = UPDATE_ACCURACY ? fullMatch : minimalMatch;
       const hasFlopNodes = existing && !existing.error && existing.nodes;
       const hasTurnNodes = !EXTRACT_TURN || (existingTurn && existingTurn.lines);
-      const hasRiverNodes = !EXTRACT_RIVER || existsSync(riverBoardPath(matchupKey, key));
+      // SRP (and legacy stack-depth cases) require river files to be on disk
+      // before skipping, since missing river = incomplete solve. 3bet/4bet pots
+      // compress to all-in too quickly for meaningful river action lines, so the
+      // solver frequently produces no river output — consider those complete.
+      const hasRiverNodes = !EXTRACT_RIVER
+        || existsSync(riverBoardPath(matchupKey, key))
+        || DEPTH === '3bet'
+        || DEPTH === '4bet';
       if (!FORCE && hashOk && hasFlopNodes && hasTurnNodes && hasRiverNodes) {
         skipped++;
         const turnInfo = existingTurn ? `, turn_lines=${Object.keys(existingTurn.lines || {}).length}` : '';
