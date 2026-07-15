@@ -1012,7 +1012,12 @@ async function main() {
       const fullMatch = minimalMatch && existing._full_hash === hashes.full;
       const hashOk = UPDATE_ACCURACY ? fullMatch : minimalMatch;
       const hasFlopNodes = existing && !existing.error && existing.nodes;
-      const hasTurnNodes = !EXTRACT_TURN || (existingTurn && existingTurn.lines);
+      // SRP requires turn extraction; 3bet/4bet pots are too shallow for
+      // meaningful multi-street action lines and often produce no turn output.
+      const hasTurnNodes = !EXTRACT_TURN
+        || (existingTurn && existingTurn.lines)
+        || DEPTH === '3bet'
+        || DEPTH === '4bet';
       // SRP (and legacy stack-depth cases) require river files to be on disk
       // before skipping, since missing river = incomplete solve. 3bet/4bet pots
       // compress to all-in too quickly for meaningful river action lines, so the
@@ -1033,7 +1038,7 @@ async function main() {
         const failing = [];
         if (FORCE) failing.push('--force');
         if (!minimalMatch) failing.push(`seed_mismatch (stored=${existing._minimal_hash || 'none'} computed=${hashes.minimal})`);
-        else if (!fullMatch) failing.push(`accuracy_mismatch (stored=${existing._full_hash || 'none'} computed=${hashes.full})`);
+        else if (UPDATE_ACCURACY && !fullMatch) failing.push(`accuracy_mismatch (stored=${existing._full_hash || 'none'} computed=${hashes.full})`);
         if (!hasFlopNodes) failing.push(existing.error ? `flop_error=${existing.error}` : 'flop_nodes=missing');
         if (!hasTurnNodes) failing.push('turn_nodes=missing');
         if (!hasRiverNodes) failing.push('river_file=missing');
