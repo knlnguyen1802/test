@@ -10,8 +10,6 @@
 //   node scripts/precompute-postflop.mjs --depth srp        # 100bb single-raised pot (SPR 16)
 //   node scripts/precompute-postflop.mjs --depth 3bet       # 100bb 3bet pot (SPR 5.4)
 //   node scripts/precompute-postflop.mjs --depth 4bet       # 100bb 4bet pot (SPR 1.7)
-//   node scripts/precompute-postflop.mjs --no-turn          # skip turn (and river) extraction
-//   node scripts/precompute-postflop.mjs --no-river         # skip river extraction (turn kept)
 //   node scripts/precompute-postflop.mjs --iterations 100   # fewer iterations
 //   node scripts/precompute-postflop.mjs --matchup SB_vs_BB # single matchup
 //   node scripts/precompute-postflop.mjs --board A72r       # single board
@@ -72,10 +70,6 @@ const FORCE = hasArg('force');
 // accuracy target changed, re-solve to hit the new target. Without this flag,
 // only changes to board/ranges trigger a re-solve.
 const UPDATE_ACCURACY = hasArg('update-accuracy');
-// Turn + river extraction are ON by default. Disable with --no-turn / --no-river.
-// (River always requires turn, so --no-turn is ignored while river is enabled.)
-const EXTRACT_RIVER = !hasArg('no-river');
-const EXTRACT_TURN = (!hasArg('no-turn') || EXTRACT_RIVER);
 
 // --engine: which solver engine to use.
 //   auto   (default) → native binary if it's built, otherwise WASM fallback
@@ -649,22 +643,93 @@ if (IS_CHILD) {
     xbet_large_raise_call: ['Check', 'BetLarge', 'Raise', 'Call'],
   };
 
-  // Helper: verify a history reaches a chance node and return possible card count
-  function chanceAt(hist, expectedLen) {
+  // Helper: verify a history reaches a chance node.
+  // NOTE: Do NOT compare num_actions() with the raw card count — the solver
+  // applies suit isomorphism at turn/river chance nodes, grouping cards whose
+  // suits are indistinguishable given the board and ranges. Two-tone and
+  // monotone boards have fewer chance actions than the naive 49/48 count.
+  function chanceAt(hist) {
     try { manager.apply_history(new Uint32Array(hist)); } catch (_) { return false; }
-    return manager.current_player() === 'chance' && manager.num_actions() === expectedLen;
+    return manager.current_player() === 'chance';
   }
 
   // -------------------------------------------------------------------------
-  // Turn + River extraction
+  // Suit isomorphism helpers — replicate the solver's isomorphic chance logic
+  // so we can map each real turn/river card to the correct chance-node action
+  // index. Without this, two-tone and monotone boards silently skip all turn
+  // and river extraction (the chance node has fewer actions than naive count).
   // -------------------------------------------------------------------------
-  let turn_nodes = null;
-  let river_nodes = null;
 
-  if (EXTRACT_TURN) {
-    turn_nodes = {};
-    if (EXTRACT_RIVER) river_nodes = {};
-    const possible = possibleCards(config.board);
+  // Compute which suit groups are isomorphic given the current board rankset.
+  // Two suits are isomorphic when they have identical rankset bitmasks on the
+  // board (same ranks present). The solver additionally checks range-level suit
+  // symmetry, but standard preflop ranges are fully suit-symmetric.
+  function computeIsomorphicSuits(rankset) {
+    const map = [null, null, null, null]; // suit → primary suit (or null if primary)
+    for (let s1 = 1; s1 < 4; s1++) {
+      for (let s2 = 0; s2 < s1; s2++) {
+        if (rankset[s1] === rankset[s2]) {
+          map[s1] = s2;
+          break;
+        }
+      }
+    }
+    return map;
+  }
+
+  // Build a bitset of ranks present per suit from a list of numeric card IDs.
+  function buildRankset(cardIds) {
+    const rs = [0, 0, 0, 0];
+    for (const c of cardIds) {
+      rs[c % 4] |= (1 << (c >> 2));
+    }
+    return rs;
+  }
+
+  // Map every legal card (not on the board) to its isomorphic group index.
+  // Returns { cardToGroup: Map<cardId, groupIdx>, groupToCard: Map<groupIdx, cardId>, numGroups }
+  function computeCardIsomorphism(boardIds, isomorphicSuits) {
+    const boardSet = new Set(boardIds);
+    const cardToGroup = new Map();
+    const groupToCard = new Map();
+    let counter = 0;
+
+    for (let c = 0; c < 52; c++) {
+      if (boardSet.has(c)) continue;
+      const suit = c % 4;
+      const mapped = isomorphicSuits[suit];
+      let group;
+      if (mapped != null) {
+        const mappedCard = c - suit + mapped;
+        if (!boardSet.has(mappedCard)) {
+          group = cardToGroup.get(mappedCard);
+        }
+      }
+      if (group === undefined) {
+        group = counter++;
+      }
+      cardToGroup.set(c, group);
+      if (!groupToCard.has(group)) {
+        groupToCard.set(group, c);
+      }
+    }
+    return { cardToGroup, groupToCard, numGroups: counter };
+  }
+
+  // -------------------------------------------------------------------------
+  // Turn + River extraction — always extracted for a complete solution.
+  // -------------------------------------------------------------------------
+  let turn_nodes = {};
+  let river_nodes = {};
+
+  // Parse numeric board IDs once; needed for isomorphism helpers.
+  const boardIds = config.board.map(c => cardId(c[0], c[1]));
+
+    // Turn isomorphism: which suits are indistinguishable on this flop?
+    const flopRankset = buildRankset(boardIds);
+    const turnIsoSuits = computeIsomorphicSuits(flopRankset);
+    const turnIso = computeCardIsomorphism(boardIds, turnIsoSuits);
+
     const DBG_TURN = !!process.env.DEBUG_TURN;
 
     for (const [flopLineName, flopSels] of Object.entries(ACTION_LINES)) {
@@ -677,21 +742,29 @@ if (IS_CHILD) {
         try {
           writeFileSync(
             join(PROJECT_ROOT, 'debug-turn.log'),
-            `[dbgturn] board=${config.board.join('')} line=${flopLineName} resolved=${!!flopHist} player=${cp} numActions=${na} expected=${possible.length}\n`,
+            `[dbgturn] board=${config.board.join('')} line=${flopLineName} resolved=${!!flopHist} player=${cp} numActions=${na} isoGroups=${turnIso.numGroups}\n`,
             { flag: 'a' }
           );
         } catch (_) {}
       }
       if (!flopHist) continue;
-      if (!chanceAt(flopHist, possible.length)) continue;
+      if (!chanceAt(flopHist)) continue;
 
       let turnActions = null;
       const turnCards = {};
       const riverPerTurnCard = {};
+      const seenTurnGroups = new Set();
 
-      for (let i = 0; i < possible.length; i++) {
-        const turnHist = [...flopHist, i];
-        const turnCardStr = indexToCard(possible[i]);
+      // Iterate through every legal turn card; use the isomorphic group index
+      // as the chance action. Skip cards whose group we already extracted
+      // (they share the same strategy as the first card in the group).
+      for (const turnCardId of turnIso.groupToCard.values()) {
+        const turnGroup = turnIso.cardToGroup.get(turnCardId);
+        if (seenTurnGroups.has(turnGroup)) continue;
+        seenTurnGroups.add(turnGroup);
+
+        const turnCardStr = indexToCard(turnCardId);
+        const turnHist = [...flopHist, turnGroup];
 
         // ── Turn strategies ──
         const turnResult = extractStreetNodes(turnHist);
@@ -700,48 +773,55 @@ if (IS_CHILD) {
         if (!turnActions) turnActions = turnResult.actions;
 
         // ── River strategies (per turn action line → chance → each river card) ──
-        if (EXTRACT_RIVER) {
-          const possibleRiver = possibleCards([...config.board, turnCardStr]);
-          const riverForCard = {};
+        // River isomorphism depends on which turn card was dealt.
+        const turnAndBoardIds = [...boardIds, turnCardId];
+        const turnRankset = buildRankset(turnAndBoardIds);
+        const riverIsoSuits = computeIsomorphicSuits(turnRankset);
+        const riverIso = computeCardIsomorphism(turnAndBoardIds, riverIsoSuits);
 
-          for (const [turnLineName, turnSels] of Object.entries(ACTION_LINES)) {
-            const riverChanceHist = resolvePath(turnHist, turnSels);
-            if (!riverChanceHist) continue;
-            if (!chanceAt(riverChanceHist, possibleRiver.length)) continue;
+        const riverForCard = {};
 
-            let riverActions = null;
-            const riverCards = {};
+        for (const [turnLineName, turnSels] of Object.entries(ACTION_LINES)) {
+          const riverChanceHist = resolvePath(turnHist, turnSels);
+          if (!riverChanceHist) continue;
+          if (!chanceAt(riverChanceHist)) continue;
 
-            for (let j = 0; j < possibleRiver.length; j++) {
-              const riverHist = [...riverChanceHist, j];
-              const riverResult = extractStreetNodes(riverHist);
-              if (!riverResult) continue;
-              riverCards[indexToCard(possibleRiver[j])] = riverResult.strategies;
-              if (!riverActions) riverActions = riverResult.actions;
-            }
+          let riverActions = null;
+          const riverCards = {};
+          const seenRiverGroups = new Set();
 
-            if (Object.keys(riverCards).length > 0) {
-              riverForCard[turnLineName] = { actions: riverActions, cards: riverCards };
-            }
+          for (const riverCardId of riverIso.groupToCard.values()) {
+            const riverGroup = riverIso.cardToGroup.get(riverCardId);
+            if (seenRiverGroups.has(riverGroup)) continue;
+            seenRiverGroups.add(riverGroup);
+
+            const riverHist = [...riverChanceHist, riverGroup];
+            const riverResult = extractStreetNodes(riverHist);
+            if (!riverResult) continue;
+            riverCards[indexToCard(riverCardId)] = riverResult.strategies;
+            if (!riverActions) riverActions = riverResult.actions;
           }
 
-          if (Object.keys(riverForCard).length > 0) {
-            riverPerTurnCard[turnCardStr] = riverForCard;
+          if (Object.keys(riverCards).length > 0) {
+            riverForCard[turnLineName] = { actions: riverActions, cards: riverCards };
           }
+        }
+
+        if (Object.keys(riverForCard).length > 0) {
+          riverPerTurnCard[turnCardStr] = riverForCard;
         }
       }
 
       if (Object.keys(turnCards).length > 0) {
         turn_nodes[flopLineName] = { actions: turnActions, cards: turnCards };
       }
-      if (EXTRACT_RIVER && Object.keys(riverPerTurnCard).length > 0) {
+      if (Object.keys(riverPerTurnCard).length > 0) {
         river_nodes[flopLineName] = riverPerTurnCard;
       }
     }
 
     if (Object.keys(turn_nodes).length === 0) turn_nodes = null;
-    if (EXTRACT_RIVER && Object.keys(river_nodes).length === 0) river_nodes = null;
-  }
+    if (Object.keys(river_nodes).length === 0) river_nodes = null;
 
   console.log(JSON.stringify({
     iterations: iteration,
@@ -813,8 +893,6 @@ function solveInNativeProcess(matchup, flopDef) {
       betSizes: BET_SIZES,
       iterations: MAX_ITERATIONS,
       target: TARGET_EXPLOIT_PCT,
-      extractTurn: EXTRACT_TURN,
-      extractRiver: EXTRACT_RIVER,
     };
 
     const child = spawn(NATIVE_BIN, [], { stdio: ['pipe', 'pipe', 'pipe'] });
@@ -875,8 +953,6 @@ function solveInChildProcess(matchupKey, matchup, flopDef) {
       '--target', String(TARGET_EXPLOIT_PCT),
       '--depth', DEPTH,
     ];
-    if (!EXTRACT_TURN) childArgs.push('--no-turn');
-    if (!EXTRACT_RIVER) childArgs.push('--no-river');
 
     const child = fork(__filename, childArgs, {
       stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
@@ -938,7 +1014,7 @@ async function main() {
   // Turn solutions — separate file
   const turnOutputPath = join(PROJECT_ROOT, 'js', 'data', `postflop-solutions-turn${suffix}.js`);
   let existingTurnSolutions = {};
-  if (EXTRACT_TURN && existsSync(turnOutputPath)) {
+  if (existsSync(turnOutputPath)) {
     try {
       const content = readFileSync(turnOutputPath, 'utf-8');
       const match = content.match(/GTO\.Data\.PostflopSolutionsTurn[A-Za-z0-9_]*\s*=\s*(\{[\s\S]*\});/);
@@ -977,8 +1053,8 @@ async function main() {
   console.log(`[precompute] Max iterations: ${MAX_ITERATIONS}, Target exploitability: ${TARGET_EXPLOIT_PCT}% pot`);
   console.log(`[precompute] Bet sizes: flop ${BET_SIZES.ipFlopBet}, turn ${BET_SIZES.ipTurnBet}, river ${BET_SIZES.ipRiverBet}, raises ${BET_SIZES.ipFlopRaise}`);
   console.log(`[precompute] Output: postflop-solutions${suffix}.js`);
-  if (EXTRACT_TURN) console.log(`[precompute] Turn output: postflop-solutions-turn${suffix}.js`);
-  if (EXTRACT_RIVER) console.log(`[precompute] River output: js/data/river/${DEPTH}/<matchup>/<board>.json`);
+  console.log(`[precompute] Turn output: postflop-solutions-turn${suffix}.js`);
+  console.log(`[precompute] River output: js/data/river/${DEPTH}/<matchup>/<board>.json`);
   const engineLabel = (ENGINE === 'native' || (ENGINE === 'auto' && NATIVE_AVAILABLE))
     ? (NATIVE_AVAILABLE ? 'native (host RAM, no 4 GiB cap)' : 'native REQUESTED but binary missing')
     : 'wasm (in-process, 4 GiB cap)';
@@ -996,7 +1072,7 @@ async function main() {
       continue;
     }
     if (!solutions[matchupKey]) solutions[matchupKey] = {};
-    if (EXTRACT_TURN && !turnSolutions[matchupKey]) turnSolutions[matchupKey] = {};
+    if (!turnSolutions[matchupKey]) turnSolutions[matchupKey] = {};
 
     for (const flopDef of boards) {
       spotNum++;
@@ -1006,26 +1082,17 @@ async function main() {
       // Default: re-solve only when board or ranges change (minimal_hash).
       // --update-accuracy: also re-solve when the accuracy target changes.
       const existing = solutions[matchupKey][key];
-      const existingTurn = EXTRACT_TURN ? (turnSolutions[matchupKey] || {})[key] : null;
+      const existingTurn = (turnSolutions[matchupKey] || {})[key];
       const hashes = computeSeedHashes(flopDef.board, matchup.oop, matchup.ip);
       const minimalMatch = existing && existing._minimal_hash === hashes.minimal;
       const fullMatch = minimalMatch && existing._full_hash === hashes.full;
       const hashOk = UPDATE_ACCURACY ? fullMatch : minimalMatch;
       const hasFlopNodes = existing && !existing.error && existing.nodes;
-      // SRP requires turn extraction; 3bet/4bet pots are too shallow for
-      // meaningful multi-street action lines and often produce no turn output.
-      const hasTurnNodes = !EXTRACT_TURN
-        || (existingTurn && existingTurn.lines)
-        || DEPTH === '3bet'
-        || DEPTH === '4bet';
-      // SRP (and legacy stack-depth cases) require river files to be on disk
-      // before skipping, since missing river = incomplete solve. 3bet/4bet pots
-      // compress to all-in too quickly for meaningful river action lines, so the
-      // solver frequently produces no river output — consider those complete.
-      const hasRiverNodes = !EXTRACT_RIVER
-        || existsSync(riverBoardPath(matchupKey, key))
-        || DEPTH === '3bet'
-        || DEPTH === '4bet';
+      // Every flop line has at least check→check, so a correctly-solved spot
+      // ALWAYS produces turn data. Missing turn = broken solve → re-solve.
+      const hasTurnNodes = existingTurn && existingTurn.lines;
+      // Same for river — every turn line reaches at least one river card.
+      const hasRiverNodes = existsSync(riverBoardPath(matchupKey, key));
       if (!FORCE && hashOk && hasFlopNodes && hasTurnNodes && hasRiverNodes) {
         skipped++;
         const turnInfo = existingTurn ? `, turn_lines=${Object.keys(existingTurn.lines || {}).length}` : '';
@@ -1088,16 +1155,16 @@ async function main() {
         }
         solutions[matchupKey][key] = entry;
 
-        // Store turn data separately
-        if (EXTRACT_TURN && result.turn_nodes) {
+        // Store turn data separately.
+        if (result.turn_nodes) {
           turnSolutions[matchupKey][key] = {
             board: flopDef.board.join(''),
             texture: flopDef.texture,
             lines: result.turn_nodes,
           };
         }
-        // Store river data separately (per-board-per-matchup file)
-        if (EXTRACT_RIVER && result.river_nodes) {
+        // Store river data separately (per-board-per-matchup file).
+        if (result.river_nodes) {
           writeRiverBoard(matchupKey, key, {
             board: flopDef.board.join(''),
             texture: flopDef.texture,
@@ -1108,9 +1175,7 @@ async function main() {
 
       // Save after each spot (incremental)
       writeSolutions(solutions, outputPath, totalSpots, errors, skipped);
-      if (EXTRACT_TURN) {
-        writeTurnSolutions(turnSolutions, turnOutputPath, totalSpots, errors, skipped);
-      }
+      writeTurnSolutions(turnSolutions, turnOutputPath, totalSpots, errors, skipped);
     }
   }
 
@@ -1164,7 +1229,8 @@ function writeTurnSolutions(turnSolutions, outputPath, totalSpots, errors, skipp
 // Depth: ${DEPTH} (pot=${STARTING_POT}, stack=${EFFECTIVE_STACK})
 // Spots: ${totalSpots - errors - skipped} solved
 //
-// Structure: { matchup → board → lines → { actions, cards } }
+// Structure: { matchup → board → { lines } }
+//   lines — resolved turn strategies per flop line → { actions, cards }
 // Flop lines (each reaches the turn): check_check, bet_small/large_call,
 //   xbet_small/large_call, and their *_raise_call variants (bet→raise→call).
 // Per card: { s: [10 decision strategies], bc: [10 per-class maps] }

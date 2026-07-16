@@ -320,6 +320,7 @@ fn card_pair_index(mut c1: usize, mut c2: usize) -> usize {
     }
     c1 * (101 - c1) / 2 + c2 - 1
 }
+#[allow(dead_code)]
 fn possible_cards(board: &[String]) -> Vec<u8> {
     let set: std::collections::HashSet<u8> = board
         .iter()
@@ -464,10 +465,6 @@ struct Config {
     bet_sizes: BetSizes,
     iterations: u32,
     target: f64,
-    #[serde(default)]
-    extract_turn: bool,
-    #[serde(default)]
-    extract_river: bool,
 }
 
 // ===========================================================================
@@ -838,11 +835,87 @@ fn node_strategy(mgr: &mut GameManager, hist: &[usize], oop_len: usize, ip_len: 
     })
 }
 
-fn chance_at(mgr: &mut GameManager, hist: &[usize], expected_len: usize) -> bool {
+/// Verify a history reaches a chance node.
+/// NOTE: Do NOT compare num_actions() with the raw card count — the solver
+/// applies suit isomorphism at turn/river chance nodes, grouping cards whose
+/// suits are indistinguishable given the board and ranges. Two-tone and
+/// monotone boards have fewer chance actions than the naive 49/48 count.
+fn chance_at(mgr: &mut GameManager, hist: &[usize]) -> bool {
     if !nav(mgr, hist) {
         return false;
     }
-    mgr.current_player() == "chance" && mgr.num_actions() == expected_len
+    mgr.current_player() == "chance"
+}
+
+// ---------------------------------------------------------------------------
+// Suit isomorphism helpers — replicate the solver's isomorphic chance logic
+// so we can map each real turn/river card to the correct chance-node action
+// index. Without this, two-tone and monotone boards silently skip all turn
+// and river extraction (the chance node has fewer actions than naive count).
+// ---------------------------------------------------------------------------
+
+/// Bitmask of ranks present per suit (index = suit, bit = rank).
+fn build_rankset(cards: &[u8]) -> [u32; 4] {
+    let mut rs = [0u32; 4];
+    for &c in cards {
+        rs[(c & 3) as usize] |= 1u32 << (c >> 2);
+    }
+    rs
+}
+
+/// Determine which suits are isomorphic given a rankset.
+/// Returns [None; 4] where Some(s) means "this suit maps to suit s".
+fn compute_isomorphic_suits(rankset: &[u32; 4]) -> [Option<u8>; 4] {
+    let mut map = [None; 4];
+    for s1 in 1u8..4 {
+        for s2 in 0..s1 {
+            if rankset[s1 as usize] == rankset[s2 as usize] {
+                map[s1 as usize] = Some(s2);
+                break;
+            }
+        }
+    }
+    map
+}
+
+/// Map every legal card (not in `board_ids`) to its isomorphic group index.
+#[allow(dead_code)]
+struct CardIsomorphism {
+    /// card_id (0..52) → group index
+    card_to_group: Vec<Option<usize>>,
+    /// group index → representative card_id
+    group_to_card: Vec<u8>,
+    num_groups: usize,
+}
+
+fn compute_card_isomorphism(board_ids: &[u8], isomorphic_suits: &[Option<u8>; 4]) -> CardIsomorphism {
+    let board_set: std::collections::HashSet<u8> = board_ids.iter().copied().collect();
+    let mut card_to_group: Vec<Option<usize>> = vec![None; 52];
+    let mut group_to_card = Vec::new();
+    let mut counter: usize = 0;
+
+    for c in 0u8..52 {
+        if board_set.contains(&c) { continue; }
+        let suit = c & 3;
+        let mut group: Option<usize> = None;
+        if let Some(mapped_suit) = isomorphic_suits[suit as usize] {
+            let mapped_card = c - suit + mapped_suit;
+            if !board_set.contains(&mapped_card) {
+                group = card_to_group[mapped_card as usize];
+            }
+        }
+        let g = group.unwrap_or_else(|| {
+            let g = counter;
+            counter += 1;
+            g
+        });
+        card_to_group[c as usize] = Some(g);
+        if g >= group_to_card.len() {
+            group_to_card.push(c);
+        }
+    }
+
+    CardIsomorphism { card_to_group, group_to_card, num_groups: counter }
 }
 
 struct StreetNodes {
@@ -1267,9 +1340,12 @@ fn main() {
     // ---- Turn + river extraction ----
     let mut turn_nodes = Map::new();
     let mut river_nodes = Map::new();
-    if config.extract_turn {
-        let possible = possible_cards(&config.board);
-        let lines = action_lines();
+    let lines = action_lines();
+
+        // Turn isomorphism: which suits are indistinguishable on this flop?
+        let flop_rankset = build_rankset(&flop_board);
+        let turn_iso_suits = compute_isomorphic_suits(&flop_rankset);
+        let turn_iso = compute_card_isomorphism(&flop_board, &turn_iso_suits);
 
         for (flop_line, flop_sels) in &lines {
             // Resolve this flop line's selectors to a concrete index history for
@@ -1279,16 +1355,25 @@ fn main() {
                 Some(h) => h,
                 None => continue,
             };
-            if !chance_at(&mut mgr, &flop_hist, possible.len()) {
+            if !chance_at(&mut mgr, &flop_hist) {
                 continue;
             }
             let mut turn_actions: Option<[Value; 10]> = None;
             let mut turn_cards = Map::new();
             let mut river_per_turn_card = Map::new();
+            let mut seen_turn_groups: std::collections::HashSet<usize> = std::collections::HashSet::new();
 
-            for (i, &pc) in possible.iter().enumerate() {
+            // Iterate through isomorphic group representatives — one per unique
+            // chance action at the turn node. Skip duplicate groups (cards whose
+            // suits are isomorphic share the same strategy).
+            for &pc in &turn_iso.group_to_card {
+                let group = turn_iso.card_to_group[pc as usize].unwrap();
+                if !seen_turn_groups.insert(group) {
+                    continue;
+                }
+
                 let mut turn_hist = flop_hist.clone();
-                turn_hist.push(i);
+                turn_hist.push(group);
                 let turn_card_str = index_to_card(pc);
 
                 let mut turn_board_ids = flop_board.clone();
@@ -1341,96 +1426,111 @@ fn main() {
                     ]);
                 }
 
-                if config.extract_river {
-                    let mut board_with_turn = config.board.clone();
-                    board_with_turn.push(turn_card_str.clone());
-                    let possible_river = possible_cards(&board_with_turn);
-                    let mut river_for_card = Map::new();
+            // ---- River extraction (per turn line) ----
+            let mut board_with_turn = config.board.clone();
+            board_with_turn.push(turn_card_str.clone());
 
-                    for (turn_line, turn_sels) in &lines {
-                        // Resolve this turn line relative to the turn history.
-                        let river_chance_hist = match resolve_path(&mut mgr, &turn_hist, turn_sels) {
-                            Some(h) => h,
-                            None => continue,
-                        };
-                        if !chance_at(&mut mgr, &river_chance_hist, possible_river.len()) {
-                            continue;
-                        }
-                        let mut river_actions: Option<[Value; 10]> = None;
-                        let mut river_cards = Map::new();
+            // River isomorphism depends on which turn card was dealt.
+            let turn_and_board_ids: Vec<u8> = {
+                let mut v = flop_board.clone();
+                v.push(pc);
+                v
+            };
+            let turn_rankset = build_rankset(&turn_and_board_ids);
+            let river_iso_suits = compute_isomorphic_suits(&turn_rankset);
+            let river_iso = compute_card_isomorphism(&turn_and_board_ids, &river_iso_suits);
 
-                        for (j, &rc) in possible_river.iter().enumerate() {
-                            let mut river_hist = river_chance_hist.clone();
-                            river_hist.push(j);
-                            let mut river_board_ids = flop_board.clone();
-                            river_board_ids.push(pc);
-                            river_board_ids.push(rc);
-                            let river_res = match extract_street_nodes(&mut mgr, &river_hist, oop_len, ip_len, Some(&river_board_ids)) {
-                                Some(r) => r,
-                                None => continue,
-                            };
-                            river_cards.insert(
-                                index_to_card(rc),
-                                json!({
-                                    "s": [
-                                        strat_value(&river_res.strategies[0]),
-                                        strat_value(&river_res.strategies[1]),
-                                        strat_value(&river_res.strategies[2]),
-                                        strat_value(&river_res.strategies[3]),
-                                        strat_value(&river_res.strategies[4]),
-                                        strat_value(&river_res.strategies[5]),
-                                        strat_value(&river_res.strategies[6]),
-                                        strat_value(&river_res.strategies[7]),
-                                        strat_value(&river_res.strategies[8]),
-                                        strat_value(&river_res.strategies[9]),
-                                    ],
-                                    "bc": [
-                                        class_value(&river_res.by_class[0]),
-                                        class_value(&river_res.by_class[1]),
-                                        class_value(&river_res.by_class[2]),
-                                        class_value(&river_res.by_class[3]),
-                                        class_value(&river_res.by_class[4]),
-                                        class_value(&river_res.by_class[5]),
-                                        class_value(&river_res.by_class[6]),
-                                        class_value(&river_res.by_class[7]),
-                                        class_value(&river_res.by_class[8]),
-                                        class_value(&river_res.by_class[9]),
-                                    ],
-                                }),
-                            );
-                            if river_actions.is_none() {
-                                river_actions = Some([
-                                    action_value(&river_res.actions[0]),
-                                    action_value(&river_res.actions[1]),
-                                    action_value(&river_res.actions[2]),
-                                    action_value(&river_res.actions[3]),
-                                    action_value(&river_res.actions[4]),
-                                    action_value(&river_res.actions[5]),
-                                    action_value(&river_res.actions[6]),
-                                    action_value(&river_res.actions[7]),
-                                    action_value(&river_res.actions[8]),
-                                    action_value(&river_res.actions[9]),
-                                ]);
-                            }
-                        }
+            let mut river_for_card = Map::new();
 
-                        if !river_cards.is_empty() {
-                            river_for_card.insert(
-                                (*turn_line).to_string(),
-                                json!({
-                                    "actions": river_actions.map(|a| Value::Array(a.to_vec())).unwrap_or(Value::Null),
-                                    "cards": Value::Object(river_cards),
-                                }),
-                            );
-                        }
+            for (turn_line, turn_sels) in &lines {
+                // Resolve this turn line relative to the turn history.
+                let river_chance_hist = match resolve_path(&mut mgr, &turn_hist, turn_sels) {
+                    Some(h) => h,
+                    None => continue,
+                };
+                if !chance_at(&mut mgr, &river_chance_hist) {
+                    continue;
+                }
+                let mut river_actions: Option<[Value; 10]> = None;
+                let mut river_cards = Map::new();
+                let mut seen_river_groups: std::collections::HashSet<usize> = std::collections::HashSet::new();
+
+                for &rc in &river_iso.group_to_card {
+                    let rgroup = river_iso.card_to_group[rc as usize].unwrap();
+                    if !seen_river_groups.insert(rgroup) {
+                        continue;
                     }
 
-                    if !river_for_card.is_empty() {
-                        river_per_turn_card
-                            .insert(turn_card_str.clone(), Value::Object(river_for_card));
+                    let mut river_hist = river_chance_hist.clone();
+                    river_hist.push(rgroup);
+                    let mut river_board_ids = flop_board.clone();
+                    river_board_ids.push(pc);
+                    river_board_ids.push(rc);
+                    let river_res = match extract_street_nodes(&mut mgr, &river_hist, oop_len, ip_len, Some(&river_board_ids)) {
+                        Some(r) => r,
+                        None => continue,
+                    };
+                    river_cards.insert(
+                        index_to_card(rc),
+                        json!({
+                            "s": [
+                                strat_value(&river_res.strategies[0]),
+                                strat_value(&river_res.strategies[1]),
+                                strat_value(&river_res.strategies[2]),
+                                strat_value(&river_res.strategies[3]),
+                                strat_value(&river_res.strategies[4]),
+                                strat_value(&river_res.strategies[5]),
+                                strat_value(&river_res.strategies[6]),
+                                strat_value(&river_res.strategies[7]),
+                                strat_value(&river_res.strategies[8]),
+                                strat_value(&river_res.strategies[9]),
+                            ],
+                            "bc": [
+                                class_value(&river_res.by_class[0]),
+                                class_value(&river_res.by_class[1]),
+                                class_value(&river_res.by_class[2]),
+                                class_value(&river_res.by_class[3]),
+                                class_value(&river_res.by_class[4]),
+                                class_value(&river_res.by_class[5]),
+                                class_value(&river_res.by_class[6]),
+                                class_value(&river_res.by_class[7]),
+                                class_value(&river_res.by_class[8]),
+                                class_value(&river_res.by_class[9]),
+                            ],
+                        }),
+                    );
+                    if river_actions.is_none() {
+                        river_actions = Some([
+                            action_value(&river_res.actions[0]),
+                            action_value(&river_res.actions[1]),
+                            action_value(&river_res.actions[2]),
+                            action_value(&river_res.actions[3]),
+                            action_value(&river_res.actions[4]),
+                            action_value(&river_res.actions[5]),
+                            action_value(&river_res.actions[6]),
+                            action_value(&river_res.actions[7]),
+                            action_value(&river_res.actions[8]),
+                            action_value(&river_res.actions[9]),
+                        ]);
                     }
                 }
+
+                if !river_cards.is_empty() {
+                    river_for_card.insert(
+                        (*turn_line).to_string(),
+                        json!({
+                            "actions": river_actions.map(|a| Value::Array(a.to_vec())).unwrap_or(Value::Null),
+                            "cards": Value::Object(river_cards),
+                        }),
+                    );
+                }
             }
+
+            if !river_for_card.is_empty() {
+                river_per_turn_card
+                    .insert(turn_card_str.clone(), Value::Object(river_for_card));
+            }
+        }
 
             if !turn_cards.is_empty() {
                 turn_nodes.insert(
@@ -1441,9 +1541,8 @@ fn main() {
                     }),
                 );
             }
-            if config.extract_river && !river_per_turn_card.is_empty() {
-                river_nodes.insert((*flop_line).to_string(), Value::Object(river_per_turn_card));
-            }
+        if !river_per_turn_card.is_empty() {
+            river_nodes.insert((*flop_line).to_string(), Value::Object(river_per_turn_card));
         }
     }
 
@@ -1466,8 +1565,8 @@ fn main() {
         "oopCombos": oop_len,
         "ipCombos": ip_len,
         "nodes": Value::Object(nodes),
-        "turn_nodes": if config.extract_turn && !turn_nodes.is_empty() { Value::Object(turn_nodes) } else { Value::Null },
-        "river_nodes": if config.extract_river && !river_nodes.is_empty() { Value::Object(river_nodes) } else { Value::Null },
+        "turn_nodes": if !turn_nodes.is_empty() { Value::Object(turn_nodes) } else { Value::Null },
+        "river_nodes": if !river_nodes.is_empty() { Value::Object(river_nodes) } else { Value::Null },
     });
 
     emit(out);
