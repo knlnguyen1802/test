@@ -3149,15 +3149,7 @@ GTO.App = {
     GTO.UI.HUD.updateStat('solver-stat-board', boardLabel || boardCards.join(' ').toUpperCase());
     GTO.UI.HUD.updateStat('solver-stat-texture', boardLabel ? boards.find(function(b) { return b.label === boardLabel; }).texture.replace(/_/g, ' ') : 'custom');
 
-    // Check pre-computed solutions (depth-aware, only for matching preset boards)
-    var cached = null;
-    if (boardLabel) {
-      var varName = depth === '100bb' ? 'PostflopSolutions' : 'PostflopSolutions_' + depth.replace('bb', 'BB');
-      var solutions = GTO.Data[varName];
-      if (solutions && solutions[matchupKey] && solutions[matchupKey][boardLabel] && !solutions[matchupKey][boardLabel].error) {
-        cached = solutions[matchupKey][boardLabel];
-      }
-    }
+    // Let solveWithCache handle the precomputed lookup (async fetch).
 
     var loadingEl = document.getElementById('solver-loading');
     var matrixLoading = document.getElementById('explore-matrix-loading');
@@ -3195,6 +3187,7 @@ GTO.App = {
 
     initPromise.then(function() {
       return GTO.Solver.solveWithCache({
+        depth: depth,
         oopRange: matchup.oopRange,
         ipRange: matchup.ipRange,
         board: boardCards,
@@ -3224,6 +3217,7 @@ GTO.App = {
           actions: results.actions,
           strategy: results.strategy,
           player: results.player || 'oop',
+          nodes: results.nodes || null,
           oopEV: results.oopEV,
           ipEV: results.ipEV,
           exploitability: results.solveInfo ? results.solveInfo.exploitability : null,

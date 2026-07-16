@@ -162,22 +162,13 @@ GTO.Engine.PostflopLookup = {
   },
 
   // -----------------------------------------------------------------------
-  // Get the correct PostflopSolutions object for a case
+  // Pre-computed solutions are now per-board JSON files loaded via
+  // GTO.SolverCache.lookup (async). Synchronous heuristic remains as fallback.
   // -----------------------------------------------------------------------
-  _getSolutions: function(caseKey) {
-    if (!GTO.Data) return null;
-    switch (caseKey) {
-      // Preflop-line cases (100bb effective)
-      case 'srp':   return GTO.Data.PostflopSolutions_SRP || null;
-      case '3bet':  return GTO.Data.PostflopSolutions_3BET || null;
-      case '4bet':  return GTO.Data.PostflopSolutions_4BET || null;
-      // Legacy stack-depth cases
-      case '100bb': return GTO.Data.PostflopSolutions || null;
-      case '40bb':  return GTO.Data.PostflopSolutions_40BB || null;
-      case '25bb':  return GTO.Data.PostflopSolutions_25BB || null;
-      case '15bb':  return GTO.Data.PostflopSolutions_15BB || null;
-      default:      return GTO.Data.PostflopSolutions_SRP || null;
-    }
+  _getSolutions: function() {
+    // Pre-computed flop data is loaded on-demand via solver-cache.js.fetch
+    // with an in-memory cache. The sync code path always uses heuristic.
+    return null;
   },
 
   // -----------------------------------------------------------------------

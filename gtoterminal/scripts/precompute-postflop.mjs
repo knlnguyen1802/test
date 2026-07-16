@@ -35,7 +35,7 @@
 // Requirements: Node.js 18+ (WebAssembly + ESM support), ~2GB free RAM
 // ============================================================================
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'fs';
 import { createHash } from 'node:crypto';
 import { execSync, fork, spawn } from 'child_process';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -997,45 +997,17 @@ function solveInChildProcess(matchupKey, matchup, flopDef) {
 }
 
 async function main() {
-  // Load existing solutions (incremental build)
-  const suffix = FILE_SUFFIX;
-  const outputPath = join(PROJECT_ROOT, 'js', 'data', `postflop-solutions${suffix}.js`);
-  let existingSolutions = {};
-  if (existsSync(outputPath)) {
-    try {
-      const content = readFileSync(outputPath, 'utf-8');
-      const match = content.match(/GTO\.Data\.PostflopSolutions[A-Za-z0-9_]*\s*=\s*(\{[\s\S]*\});/);
-      if (match) existingSolutions = JSON.parse(match[1]);
-    } catch (e) {
-      // Fresh start
-    }
-  }
-
-  // Turn solutions — separate file
-  const turnOutputPath = join(PROJECT_ROOT, 'js', 'data', `postflop-solutions-turn${suffix}.js`);
-  let existingTurnSolutions = {};
-  if (existsSync(turnOutputPath)) {
-    try {
-      const content = readFileSync(turnOutputPath, 'utf-8');
-      const match = content.match(/GTO\.Data\.PostflopSolutionsTurn[A-Za-z0-9_]*\s*=\s*(\{[\s\S]*\});/);
-      if (match) existingTurnSolutions = JSON.parse(match[1]);
-    } catch (e) {
-      // Fresh start
-    }
-  }
-
-  // River solutions — one file per (depth, matchup, board) under js/data/river/.
-  // Lazy-loaded per board by the client, so the huge per-class river data never
-  // needs to be resident in RAM all at once (only the current board is loaded).
-  const riverRoot = join(PROJECT_ROOT, 'js', 'data', 'river', DEPTH);
-  const riverBoardPath = (mk, lbl) => join(riverRoot, mk, `${lbl}.json`);
-  const writeRiverBoard = (mk, lbl, entry) => {
-    mkdirSync(join(riverRoot, mk), { recursive: true });
-    writeFileSync(riverBoardPath(mk, lbl), JSON.stringify(entry), 'utf-8');
+  // All solutions are per-board JSON files under js/data/<street>/<depth>/<matchup>/<board>.json.
+  // No monolithic files — each spot is writeable independently, and the client
+  // fetches only the board it needs. Skips are determined by file existence.
+  const boardRoot = (street) => join(PROJECT_ROOT, 'js', 'data', street, DEPTH);
+  const boardPath = (street, mk, lbl) => join(boardRoot(street), mk, `${lbl}.json`);
+  const writeBoard = (street, mk, lbl, entry) => {
+    mkdirSync(join(boardRoot(street), mk), { recursive: true });
+    writeFileSync(boardPath(street, mk, lbl), JSON.stringify(entry), 'utf-8');
   };
+  const hasBoard = (street, mk, lbl) => existsSync(boardPath(street, mk, lbl));
 
-  const solutions = { ...existingSolutions };
-  const turnSolutions = { ...existingTurnSolutions };
   const matchupKeys = FILTER_MATCHUP
     ? [FILTER_MATCHUP]
     : Object.keys(MATCHUP_RANGES);
@@ -1044,6 +1016,24 @@ async function main() {
     : FLOP_BOARDS;
 
   const totalSpots = matchupKeys.length * boards.length;
+
+  // In-memory map: "matchupKey/boardLabel" → { minHash, fullHash } (for skip logic).
+  // Scan existing flop files for their hashes — doesn't load full solutions.
+  const solvedSpots = new Map();
+  for (const mk of matchupKeys) {
+    const dir = join(boardRoot('flop'), mk);
+    if (!existsSync(dir)) continue;
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith('.json')) continue;
+      const lbl = f.replace('.json', '');
+      try {
+        const entry = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
+        if (entry._minimal_hash) {
+          solvedSpots.set(`${mk}/${lbl}`, { minHash: entry._minimal_hash, fullHash: entry._full_hash || '' });
+        }
+      } catch (_) {}
+    }
+  }
   let spotNum = 0;
   let errors = 0;
   let skipped = 0;
@@ -1052,8 +1042,8 @@ async function main() {
   console.log(`[precompute] Solving ${totalSpots} spots (${matchupKeys.length} matchups x ${boards.length} boards)`);
   console.log(`[precompute] Max iterations: ${MAX_ITERATIONS}, Target exploitability: ${TARGET_EXPLOIT_PCT}% pot`);
   console.log(`[precompute] Bet sizes: flop ${BET_SIZES.ipFlopBet}, turn ${BET_SIZES.ipTurnBet}, river ${BET_SIZES.ipRiverBet}, raises ${BET_SIZES.ipFlopRaise}`);
-  console.log(`[precompute] Output: postflop-solutions${suffix}.js`);
-  console.log(`[precompute] Turn output: postflop-solutions-turn${suffix}.js`);
+  console.log(`[precompute] Output: js/data/flop/${DEPTH}/<matchup>/<board>.json`);
+  console.log(`[precompute] Turn output: js/data/turn/${DEPTH}/<matchup>/<board>.json`);
   console.log(`[precompute] River output: js/data/river/${DEPTH}/<matchup>/<board>.json`);
   const engineLabel = (ENGINE === 'native' || (ENGINE === 'auto' && NATIVE_AVAILABLE))
     ? (NATIVE_AVAILABLE ? 'native (host RAM, no 4 GiB cap)' : 'native REQUESTED but binary missing')
@@ -1071,46 +1061,36 @@ async function main() {
       console.log(`[precompute] ${matchupKey} — no derived range for case '${RANGE_CASE}'. Skipping.`);
       continue;
     }
-    if (!solutions[matchupKey]) solutions[matchupKey] = {};
-    if (!turnSolutions[matchupKey]) turnSolutions[matchupKey] = {};
-
     for (const flopDef of boards) {
       spotNum++;
       const key = flopDef.label;
 
-      // Skip if seed hashes match existing solution. --force overrides.
-      // Default: re-solve only when board or ranges change (minimal_hash).
-      // --update-accuracy: also re-solve when the accuracy target changes.
-      const existing = solutions[matchupKey][key];
-      const existingTurn = (turnSolutions[matchupKey] || {})[key];
       const hashes = computeSeedHashes(flopDef.board, matchup.oop, matchup.ip);
-      const minimalMatch = existing && existing._minimal_hash === hashes.minimal;
-      const fullMatch = minimalMatch && existing._full_hash === hashes.full;
+      const spotId = `${matchupKey}/${key}`;
+      const prev = solvedSpots.get(spotId);
+      const minimalMatch = prev && prev.minHash === hashes.minimal;
+      const fullMatch = minimalMatch && prev.fullHash === hashes.full;
       const hashOk = UPDATE_ACCURACY ? fullMatch : minimalMatch;
-      const hasFlopNodes = existing && !existing.error && existing.nodes;
-      // Every flop line has at least check→check, so a correctly-solved spot
-      // ALWAYS produces turn data. Missing turn = broken solve → re-solve.
-      const hasTurnNodes = existingTurn && existingTurn.lines;
-      // Same for river — every turn line reaches at least one river card.
-      const hasRiverNodes = existsSync(riverBoardPath(matchupKey, key));
-      if (!FORCE && hashOk && hasFlopNodes && hasTurnNodes && hasRiverNodes) {
+      const hasFlop = hashOk && hasBoard('flop', matchupKey, key);
+      const hasTurn = hasBoard('turn', matchupKey, key);
+      const hasRiver = hasBoard('river', matchupKey, key);
+      if (!FORCE && hasFlop && hasTurn && hasRiver) {
         skipped++;
-        const turnInfo = existingTurn ? `, turn_lines=${Object.keys(existingTurn.lines || {}).length}` : '';
-        console.log(`[precompute] [${spotNum}/${totalSpots}] ${matchupKey}/${key} — seed unchanged (${Object.keys(existing.nodes).length + 1} nodes${turnInfo}), skipping`);
+        console.log(`[precompute] [${spotNum}/${totalSpots}] ${spotId} — seed unchanged, skipping`);
         continue;
       }
 
       // Diagnostic: log why this spot needs re-solving
-      if (existing) {
+      if (prev) {
         const failing = [];
         if (FORCE) failing.push('--force');
-        if (!minimalMatch) failing.push(`seed_mismatch (stored=${existing._minimal_hash || 'none'} computed=${hashes.minimal})`);
-        else if (UPDATE_ACCURACY && !fullMatch) failing.push(`accuracy_mismatch (stored=${existing._full_hash || 'none'} computed=${hashes.full})`);
-        if (!hasFlopNodes) failing.push(existing.error ? `flop_error=${existing.error}` : 'flop_nodes=missing');
-        if (!hasTurnNodes) failing.push('turn_nodes=missing');
-        if (!hasRiverNodes) failing.push('river_file=missing');
+        if (!minimalMatch) failing.push(`seed_mismatch (stored=${prev.minHash} computed=${hashes.minimal})`);
+        else if (UPDATE_ACCURACY && !fullMatch) failing.push(`accuracy_mismatch`);
+        if (!hasFlop) failing.push('flop_file=missing');
+        if (!hasTurn) failing.push('turn_file=missing');
+        if (!hasRiver) failing.push('river_file=missing');
         if (failing.length > 0) {
-          console.log(`[precompute] [${spotNum}/${totalSpots}] ${matchupKey}/${key} — re-solving (${failing.join(', ')})`);
+          console.log(`[precompute] [${spotNum}/${totalSpots}] ${spotId} — re-solving (${failing.join(', ')})`);
         }
       }
 
@@ -1124,7 +1104,6 @@ async function main() {
         const detail = result.message ? `: ${result.message}` : '';
         console.log(`  ERROR: ${result.error}${detail} (${elapsed}s)`);
         errors++;
-        solutions[matchupKey][key] = { error: result.error };
       } else {
         const nodeCount = result.nodes ? Object.keys(result.nodes).length : 0;
         const turnLineCount = result.turn_nodes ? Object.keys(result.turn_nodes).length : 0;
@@ -1132,7 +1111,11 @@ async function main() {
         const turnInfo = turnLineCount > 0 ? `, turn_lines=${turnLineCount}` : '';
         const riverInfo = riverLineCount > 0 ? `, river_lines=${riverLineCount}` : '';
         console.log(`  OK: ${result.iterations} iter, exploit=${result.exploitability}, actions=${result.actions}, nodes=${nodeCount + 1}${turnInfo}${riverInfo} (${elapsed}s)`);
-        const entry = {
+
+        // Write flop solution (per-board JSON)
+        const flopEntry = {
+          depth: DEPTH,
+          matchup: matchupKey,
           board: flopDef.board.join(''),
           texture: flopDef.texture,
           _minimal_hash: hashes.minimal,
@@ -1151,36 +1134,36 @@ async function main() {
           ipCombos: result.ipCombos,
         };
         if (result.nodes && Object.keys(result.nodes).length > 0) {
-          entry.nodes = result.nodes;
+          flopEntry.nodes = result.nodes;
         }
-        solutions[matchupKey][key] = entry;
+        writeBoard('flop', matchupKey, key, flopEntry);
+        solvedSpots.set(spotId, { minHash: hashes.minimal, fullHash: hashes.full });
 
-        // Store turn data separately.
+        // Write turn data (per-board JSON)
         if (result.turn_nodes) {
-          turnSolutions[matchupKey][key] = {
+          writeBoard('turn', matchupKey, key, {
+            depth: DEPTH,
+            matchup: matchupKey,
             board: flopDef.board.join(''),
             texture: flopDef.texture,
             lines: result.turn_nodes,
-          };
+          });
         }
-        // Store river data separately (per-board-per-matchup file).
+        // Write river data (per-board JSON)
         if (result.river_nodes) {
-          writeRiverBoard(matchupKey, key, {
+          writeBoard('river', matchupKey, key, {
+            depth: DEPTH,
+            matchup: matchupKey,
             board: flopDef.board.join(''),
             texture: flopDef.texture,
             lines: result.river_nodes,
           });
         }
       }
-
-      // Save after each spot (incremental)
-      writeSolutions(solutions, outputPath, totalSpots, errors, skipped);
-      writeTurnSolutions(turnSolutions, turnOutputPath, totalSpots, errors, skipped);
     }
   }
 
   console.log(`\n[precompute] Done. ${totalSpots - errors - skipped} solved, ${skipped} skipped, ${errors} errors.`);
-  console.log(`[precompute] Output: ${outputPath}`);
 
   // Write index (per-depth)
   const indexData = {
@@ -1195,66 +1178,6 @@ async function main() {
   const indexContent = `// Pre-computed Postflop Solutions — Index/Metadata (${DEPTH})\n// Auto-generated by scripts/precompute-postflop.mjs\n\nwindow.GTO = window.GTO || {};\nGTO.Data = GTO.Data || {};\n\nGTO.Data.PostflopSolutionIndex${varSuffix} = ${JSON.stringify(indexData, null, 2)};\n`;
   writeFileSync(indexPath, indexContent, 'utf-8');
   console.log(`[precompute] Index: ${indexPath}`);
-}
-
-function writeSolutions(solutions, outputPath, totalSpots, errors, skipped) {
-  const varSuffix = VAR_SUFFIX;
-  const header = `// ============================================================================
-// Pre-computed Postflop Solutions (${DEPTH})
-// ============================================================================
-// Auto-generated by scripts/precompute-postflop.mjs
-// Generated: ${new Date().toISOString()}
-// Depth: ${DEPTH} (pot=${STARTING_POT}, stack=${EFFECTIVE_STACK}, SPR=${(EFFECTIVE_STACK/STARTING_POT).toFixed(1)})
-// Spots: ${totalSpots - errors - skipped} solved
-// Settings: ${MAX_ITERATIONS} max iterations, ${TARGET_EXPLOIT_PCT}% target exploitability
-// Bet sizes: flop ${BET_SIZES.ipFlopBet}, turn ${BET_SIZES.ipTurnBet}, river ${BET_SIZES.ipRiverBet}
-// ============================================================================
-
-window.GTO = window.GTO || {};
-GTO.Data = GTO.Data || {};
-
-GTO.Data.PostflopSolutions${varSuffix} = `;
-
-  const json = JSON.stringify(solutions, null, 2);
-  writeFileSync(outputPath, header + json + ';\n', 'utf-8');
-}
-
-function writeTurnSolutions(turnSolutions, outputPath, totalSpots, errors, skipped) {
-  const varSuffix = VAR_SUFFIX;
-  const header = `// ============================================================================
-// Pre-computed Turn Solutions (${DEPTH})
-// ============================================================================
-// Auto-generated by scripts/precompute-postflop.mjs --turn
-// Generated: ${new Date().toISOString()}
-// Depth: ${DEPTH} (pot=${STARTING_POT}, stack=${EFFECTIVE_STACK})
-// Spots: ${totalSpots - errors - skipped} solved
-//
-// Structure: { matchup → board → { lines } }
-//   lines — resolved turn strategies per flop line → { actions, cards }
-// Flop lines (each reaches the turn): check_check, bet_small/large_call,
-//   xbet_small/large_call, and their *_raise_call variants (bet→raise→call).
-// Per card: { s: [10 decision strategies], bc: [10 per-class maps] }
-//   s  — range-averaged strategy per decision:
-//   bc — per-hand-class strategy map (class → freqs) for the same decision
-//   [0] OOP first to act on turn
-//   [1] IP after OOP check
-//   [2] IP facing OOP bet SMALL (Fold/Call/Raise)
-//   [3] OOP facing IP probe SMALL (check → IP bet → OOP decides)
-//   [4] OOP facing raise after betting small   ([1,2])
-//   [5] OOP facing raise after betting large   ([2,2])
-//   [6] IP facing check-raise after betting small ([0,1,2])
-//   [7] IP facing check-raise after betting large ([0,2,2])
-//   [8] IP facing OOP bet LARGE   ([2])
-//   [9] OOP facing IP probe LARGE ([0,2])
-// ============================================================================
-
-window.GTO = window.GTO || {};
-GTO.Data = GTO.Data || {};
-
-GTO.Data.PostflopSolutionsTurn${varSuffix} = `;
-
-  const json = JSON.stringify(turnSolutions, null, 2);
-  writeFileSync(outputPath, header + json + ';\n', 'utf-8');
 }
 
 main().catch(err => {

@@ -1,21 +1,22 @@
 // ============================================================================
 // Solver Cache — Pre-computed Postflop Solution Lookup
 // ============================================================================
-// Checks if a pre-computed solution exists for a given board/range combo.
-// Falls back to null so the caller can run a live WASM solve instead.
+// Fetches per-board JSON files from js/data/flop/<depth>/<matchup>/<board>.json.
+// Results are cached in-memory so repeated lookups don't re-fetch.
 //
-// Usage:
-//   var cached = GTO.SolverCache.lookup(board, oopRange, ipRange, matchup);
+// Usage (async):
+//   var cached = await GTO.SolverCache.lookup(board, oopPos, ipPos, depth);
 //   if (cached) { /* use cached.actions, cached.strategy, etc. */ }
-//   else { /* fall back to GTO.Solver.solve(...) */ }
-//
-// The cache maps:  matchup (position pair) + board texture -> pre-computed result
+//   else { /* fall back to live solve */ }
 // ============================================================================
 
 window.GTO = window.GTO || {};
 
 GTO.SolverCache = (function() {
   'use strict';
+
+  // In-memory cache: "depth/matchup/board" → solution object
+  var _cache = {};
 
   // -----------------------------------------------------------------------
   // Board texture classification (lightweight, standalone)
@@ -25,7 +26,6 @@ GTO.SolverCache = (function() {
   var SUITS_STR = 'cdhs';
 
   function cardRank(card) {
-    // card is a 2-char string like 'Ah'
     return RANKS_STR.indexOf(card[0]);
   }
 
@@ -34,13 +34,11 @@ GTO.SolverCache = (function() {
   }
 
   function classifyTexture(boardCards) {
-    // boardCards: array of 2-char strings: ['Ah','7d','2c']
     if (!boardCards || boardCards.length < 3) return 'dry_rainbow';
 
     var ranks = boardCards.map(cardRank);
     var suits = boardCards.map(cardSuit);
 
-    // Suit distribution
     var suitCounts = {};
     for (var i = 0; i < suits.length; i++) {
       suitCounts[suits[i]] = (suitCounts[suits[i]] || 0) + 1;
@@ -50,7 +48,6 @@ GTO.SolverCache = (function() {
       if (suitCounts[s] > maxSuit) maxSuit = suitCounts[s];
     }
 
-    // Rank distribution (check for pairing)
     var rankCounts = {};
     for (var i = 0; i < ranks.length; i++) {
       rankCounts[ranks[i]] = (rankCounts[ranks[i]] || 0) + 1;
@@ -60,7 +57,6 @@ GTO.SolverCache = (function() {
       if (rankCounts[r] >= 2) { isPaired = true; break; }
     }
 
-    // Connectedness: count how many adjacent pairs have gap <= 2
     var unique = [];
     var seen = {};
     for (var i = 0; i < ranks.length; i++) {
@@ -72,7 +68,6 @@ GTO.SolverCache = (function() {
     for (var i = 0; i < unique.length - 1; i++) {
       if (unique[i] - unique[i + 1] <= 2) connected++;
     }
-    // Wheel potential
     if (seen[12] && unique.some(function(r) { return r <= 3; })) connected++;
 
     var isWet = connected >= 2 || (unique.length >= 3 && (unique[0] - unique[unique.length - 1]) <= 4);
@@ -88,10 +83,7 @@ GTO.SolverCache = (function() {
   }
 
   // -----------------------------------------------------------------------
-  // Board height anchor — the strategically dominant rank of the board.
-  // Unpaired boards anchor on the top card; paired boards anchor on the pair
-  // rank (e.g. A88 plays by the pair of 8s, so it matches an 88x board, not AAx).
-  // Returns a rank index in cardRank() units (2=0 .. A=12). See BOARD.md §2.
+  // Board height anchor
   // -----------------------------------------------------------------------
 
   function anchorRank(boardCards) {
@@ -109,8 +101,6 @@ GTO.SolverCache = (function() {
   // Find the closest pre-computed board for a given texture
   // -----------------------------------------------------------------------
 
-  // Texture -> solved board labels (must match scripts/postflop_config/
-  // flop-boards.mjs). See BOARD.md §3.
   var TEXTURE_BOARDS = {
     dry_rainbow:      ['A72r', 'K83r', 'Q62r', 'J74r', '852r'],
     dry_twotone:      ['A72tt', 'K92tt', 'Q74tt', 'J83tt', '852tt'],
@@ -122,7 +112,6 @@ GTO.SolverCache = (function() {
     highly_connected: ['AKQr', 'KQTr', 'JT9r', 'T98r', '765r']
   };
 
-  // If a texture somehow has no boards, fall back to the nearest sibling.
   var TEXTURE_FALLBACK = {
     paired_wet: 'paired_dry',
     wet_twotone: 'wet_rainbow',
@@ -131,8 +120,6 @@ GTO.SolverCache = (function() {
     monotone: 'wet_twotone'
   };
 
-  // Board label -> anchor rank (cardRank units: 2=0 .. A=12). Paired boards use
-  // the pair rank. Keep in sync with TEXTURE_BOARDS.
   var BOARD_ANCHOR = {
     'A72r': 12, 'K83r': 11, 'Q62r': 10, 'J74r': 9, '852r': 6,
     'A72tt': 12, 'K92tt': 11, 'Q74tt': 10, 'J83tt': 9, '852tt': 6,
@@ -181,7 +168,6 @@ GTO.SolverCache = (function() {
     return POSITION_ALIASES[pos] || pos;
   }
 
-  // Map of (oopPos, ipPos) -> matchup key in solutions
   var MATCHUP_MAP = {
     'SB_BB': 'SB_BB',
     'BB_SB': 'SB_BB',
@@ -191,8 +177,8 @@ GTO.SolverCache = (function() {
     'BB_CO': 'CO_BB',
     'UTG_BB': 'UTG_BB',
     'BB_UTG': 'UTG_BB',
-    'SB_BTN': 'BTN_SB',   // SB 3-bet pot: SB is OOP
-    'BTN_SB': 'BTN_SB'    // alias
+    'SB_BTN': 'BTN_SB',
+    'BTN_SB': 'BTN_SB'
   };
 
   function findMatchup(oopPos, ipPos) {
@@ -203,154 +189,88 @@ GTO.SolverCache = (function() {
   }
 
   // -----------------------------------------------------------------------
+  // Fetch a per-board flop solution JSON file
+  // -----------------------------------------------------------------------
+
+  function fetchFlop(depth, matchup, boardLabel) {
+    var url = 'js/data/flop/' + depth + '/' + matchup + '/' + boardLabel + '.json';
+    return fetch(url, { cache: 'force-cache' })
+      .then(function(r) {
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .catch(function() { return null; });
+  }
+
+  // -----------------------------------------------------------------------
   // Public API
   // -----------------------------------------------------------------------
 
   return {
     /**
-     * Look up a pre-computed solution for a postflop spot.
+     * Look up a pre-computed flop solution (async).
      *
-     * @param {string[]} board  - Flop cards as 2-char strings: ['Ah','7d','2c']
-     * @param {string} oopPos   - OOP player position: 'SB','BB','UTG','CO','BTN'
-     * @param {string} ipPos    - IP player position: 'SB','BB','UTG','CO','BTN'
-     * @returns {object|null}   - Pre-computed solution or null if not cached
-     *
-     * Returned object (when found):
-     * {
-     *   board: 'Ah7d2c',          // original board string
-     *   matchedBoard: 'A72r',     // which pre-computed board was matched
-     *   texture: 'dry_rainbow',   // board texture category
-     *   matchup: 'SB_BB',         // position matchup key
-     *   exact: false,             // whether board was an exact match
-     *   actions: 'Check:0/Bet:33/Bet:67',
-     *   strategy: [0.45, 0.35, 0.20],  // aggregate frequencies for each action
-     *   oopEquity: 0.485,
-     *   ipEquity: 0.515,
-     *   oopEV: 48.5,
-     *   ipEV: 51.5,
-     *   exploitability: 0.3,
-     *   iterations: 200
-     * }
+     * @param {string[]} board  - Flop cards as 2-char strings
+     * @param {string} oopPos   - OOP player position
+     * @param {string} ipPos    - IP player position
+     * @param {string} depth    - 'srp', '3bet', '4bet', '100bb', etc.
+     * @returns {Promise<object|null>}
      */
-    lookup: function(board, oopPos, ipPos) {
-      // Validate inputs
-      if (!board || board.length < 3) return null;
+    lookup: function(board, oopPos, ipPos, depth) {
+      if (!board || board.length < 3) return Promise.resolve(null);
 
-      // Check that solutions data is loaded
-      if (!GTO.Data || !GTO.Data.PostflopSolutions) return null;
-
-      // Find matching position matchup
       var matchupKey = findMatchup(oopPos, ipPos);
-      if (!matchupKey) return null;
+      if (!matchupKey) return Promise.resolve(null);
 
-      var matchupSolutions = GTO.Data.PostflopSolutions[matchupKey];
-      if (!matchupSolutions) return null;
-
-      // Classify the board texture
       var texture = classifyTexture(board);
-
-      // Find the closest pre-computed board for this texture
       var closestLabel = findClosestBoard(texture, board);
-      if (!closestLabel) return null;
+      if (!closestLabel) return Promise.resolve(null);
 
-      // Look up the solution
-      var solution = matchupSolutions[closestLabel];
-      if (!solution || solution.error) return null;
+      var d = depth || 'srp';
+      var cacheKey = d + '/' + matchupKey + '/' + closestLabel;
 
-      // Build result
-      return {
-        board: board.join(''),
-        matchedBoard: closestLabel,
-        texture: texture,
-        matchup: matchupKey,
-        exact: false,  // texture-based match, not exact board match
-        actions: solution.actions,
-        strategy: solution.strategy,
-        oopEquity: solution.oopEquity,
-        ipEquity: solution.ipEquity,
-        oopEV: solution.oopEV,
-        ipEV: solution.ipEV,
-        exploitability: solution.exploitability,
-        iterations: solution.iterations,
-        numActions: solution.numActions,
-        oopCombos: solution.oopCombos,
-        ipCombos: solution.ipCombos,
-      };
+      // Check in-memory cache
+      if (_cache[cacheKey]) return Promise.resolve(_cache[cacheKey]);
+
+      // Fetch from disk
+      return fetchFlop(d, matchupKey, closestLabel).then(function(solution) {
+        if (!solution || solution.error) return null;
+
+        var result = {
+          board: board.join(''),
+          matchedBoard: closestLabel,
+          texture: texture,
+          matchup: matchupKey,
+          depth: d,
+          exact: false,
+          actions: solution.actions,
+          player: solution.player,
+          strategy: solution.strategy,
+          nodes: solution.nodes || null,
+          oopEquity: solution.oopEquity,
+          ipEquity: solution.ipEquity,
+          oopEV: solution.oopEV,
+          ipEV: solution.ipEV,
+          exploitability: solution.exploitability,
+          iterations: solution.iterations,
+          numActions: solution.numActions,
+          oopCombos: solution.oopCombos,
+          ipCombos: solution.ipCombos,
+        };
+
+        _cache[cacheKey] = result;
+        return result;
+      });
     },
 
-    /**
-     * Get all available matchups in the cache.
-     * @returns {string[]} matchup keys like ['SB_BB', 'BTN_BB', ...]
-     */
-    getMatchups: function() {
-      if (!GTO.Data || !GTO.Data.PostflopSolutions) return [];
-      return Object.keys(GTO.Data.PostflopSolutions);
-    },
-
-    /**
-     * Get all board labels for a given matchup.
-     * @param {string} matchupKey
-     * @returns {string[]} board labels like ['A72r', 'K83r', ...]
-     */
-    getBoards: function(matchupKey) {
-      if (!GTO.Data || !GTO.Data.PostflopSolutions) return [];
-      var matchup = GTO.Data.PostflopSolutions[matchupKey];
-      if (!matchup) return [];
-      return Object.keys(matchup);
-    },
-
-    /**
-     * Get a specific pre-computed solution by matchup and board label.
-     * @param {string} matchupKey - e.g. 'SB_BB'
-     * @param {string} boardLabel - e.g. 'A72r'
-     * @returns {object|null}
-     */
-    getExact: function(matchupKey, boardLabel) {
-      if (!GTO.Data || !GTO.Data.PostflopSolutions) return null;
-      var matchup = GTO.Data.PostflopSolutions[matchupKey];
-      if (!matchup) return null;
-      return matchup[boardLabel] || null;
-    },
-
-    /**
-     * Classify a board's texture (exposed for external use).
-     * @param {string[]} boardCards - ['Ah','7d','2c']
-     * @returns {string} texture category
-     */
     classifyTexture: classifyTexture,
 
-    /**
-     * Check if solutions are loaded and available.
-     * @returns {boolean}
-     */
-    isAvailable: function() {
-      return !!(GTO.Data && GTO.Data.PostflopSolutions &&
-                Object.keys(GTO.Data.PostflopSolutions).length > 0);
-    },
-
-    /**
-     * Get cache statistics.
-     * @returns {object} { matchups, boards, totalSpots }
-     */
-    stats: function() {
-      if (!this.isAvailable()) return { matchups: 0, boards: 0, totalSpots: 0 };
-      var matchups = Object.keys(GTO.Data.PostflopSolutions);
-      var totalSpots = 0;
-      for (var i = 0; i < matchups.length; i++) {
-        totalSpots += Object.keys(GTO.Data.PostflopSolutions[matchups[i]]).length;
-      }
-      return {
-        matchups: matchups.length,
-        boards: FLOP_BOARDS ? FLOP_BOARDS.length : 0,
-        totalSpots: totalSpots
-      };
+    findClosestBoard: function(texture, boardCards) {
+      return findClosestBoard(texture, boardCards);
     },
 
     /**
      * Parse strategy string into structured action data.
-     * Input:  actions = "Check:0/Bet:33/Bet:67"
-     *         strategy = [0.45, 0.35, 0.20]
-     * Output: [{action:'Check', amount:0, freq:0.45}, {action:'Bet', amount:33, freq:0.35}, ...]
      */
     parseStrategy: function(actions, strategy) {
       if (!actions || !strategy) return [];
