@@ -6,9 +6,12 @@
 /gtoterminal/js/data/flop/
 /gtoterminal/js/data/turn/
 /gtoterminal/js/data/river/
+/gtoterminal/js/data/postflop-solutions-srp.js
+/gtoterminal/js/data/postflop-solutions-turn-srp.js
 
 /gtoterminal/solver-native/target/
 /gotterminal/solver-native/Cargo.lock
+/gtoterminal/python/src/gto_lookup.egg-info/
 postflop-solver-main/target/
 postflop-solver-main/Cargo.lock
 solver-preflop/pkg/
