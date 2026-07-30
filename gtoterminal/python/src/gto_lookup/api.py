@@ -58,6 +58,19 @@ def _parse_actions(actions_str: Optional[str], strategy: Optional[Sequence[float
     return out
 
 
+def _deep_merge(base: Any, extra: Any) -> Any:
+    """Recursively merge ``extra`` into ``base`` (dict-only recursion)."""
+    if not isinstance(base, dict) or not isinstance(extra, dict):
+        return extra
+    out = dict(base)
+    for k, v in extra.items():
+        if k in out and isinstance(out[k], dict) and isinstance(v, dict):
+            out[k] = _deep_merge(out[k], v)
+        else:
+            out[k] = v
+    return out
+
+
 class GTOLookup:
     """Entry point for preflop and postflop GTO lookups."""
 
@@ -115,6 +128,16 @@ class GTOLookup:
         if cfg.preflop:
             path = cfg.resolve(cfg.preflop.path)
             self._preflop = load_js_object(path, cfg.preflop.var)
+            # Heuristic add-on ranges are an overlay, not a replacement.
+            heuristic_path = os.path.join(
+                os.path.dirname(path),
+                "preflop-ranges-heuristic-for-solution.js",
+            )
+            if os.path.exists(heuristic_path):
+                heuristic = load_js_object(
+                    heuristic_path, "GTO.Data.PreflopRangesHeuristicSolution"
+                )
+                self._preflop = _deep_merge(self._preflop, heuristic)
 
         levels = list(bet_levels) if bet_levels else list(cfg.bet_levels.keys())
         for level in levels:
@@ -214,12 +237,12 @@ class GTOLookup:
         if table is None:
             return None
 
-        # Build the position key. RFI keys on the opener alone; the raise/3bet/
-        # 4bet spots key on `opener_other` — try both orders.
+        # Build the position key. Keys are hero_villain (hero = the seat whose
+        # range is stored, i.e. the one facing the action). RFI keys on hero alone.
         if spot == "rfi" or villain is None:
             candidates = [hero]
         else:
-            candidates = [f"{hero}_{villain}", f"{villain}_{hero}"]
+            candidates = [f"{hero}_{villain}"]
 
         entry = None
         used_key = None

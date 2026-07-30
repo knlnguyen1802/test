@@ -291,11 +291,9 @@ GTO.Solver = {
     var self = this;
 
     // Try cache lookup first
-    if (GTO.SolverCache && GTO.SolverCache.isAvailable() && config.oopPosition && config.ipPosition) {
+    if (GTO.SolverCache && config.oopPosition && config.ipPosition) {
       var board = config.board;
-      // Ensure board is in string format for cache lookup
       if (board && board.length > 0 && typeof board[0] !== 'string') {
-        // Convert Uint8Array back to string format
         var RANKS = '23456789TJQKA';
         var SUITS = 'cdhs';
         board = [];
@@ -305,20 +303,24 @@ GTO.Solver = {
         }
       }
 
-      var cached = GTO.SolverCache.lookup(board, config.oopPosition, config.ipPosition);
-      if (cached) {
+      var depth = config.depth || 'srp';
+      return GTO.SolverCache.lookup(board, config.oopPosition, config.ipPosition, depth).then(function(cached) {
+        if (!cached) {
+          console.log('[Solver] Cache miss, running live solve...');
+          return self.solve(config);
+        }
+
         console.log('[Solver] Cache hit:', cached.matchup, cached.matchedBoard, '(texture:', cached.texture + ')');
 
-        // Format cached result to match live solve output structure
         var parsed = GTO.SolverCache.parseStrategy(cached.actions, cached.strategy);
-        return Promise.resolve({
+        return {
           type: 'getResults',
           cached: true,
           matchedBoard: cached.matchedBoard,
           texture: cached.texture,
           matchup: cached.matchup,
           actions: cached.actions,
-          player: 'oop',  // OOP acts first at root
+          player: cached.player || 'oop',
           numActions: cached.numActions,
           strategy: cached.strategy,
           parsedStrategy: parsed,
@@ -333,11 +335,11 @@ GTO.Solver = {
             exploitability: cached.exploitability,
             cached: true
           }
-        });
-      }
+        };
+      });
     }
 
-    // No cache hit — fall back to live WASM solve
+    // No cache eligible — fall back to live WASM solve
     console.log('[Solver] Cache miss, running live solve...');
     return this.solve(config);
   },

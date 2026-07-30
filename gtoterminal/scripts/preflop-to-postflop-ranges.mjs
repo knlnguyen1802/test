@@ -2,8 +2,8 @@
 // ============================================================================
 // Preflop -> Postflop range bridge
 // ============================================================================
-// Builds the OOP/IP input ranges for the postflop precompute solver straight
-// from the preflop range lookup table (preflop-lookup/preflop-ranges.js),
+// Builds the OOP/IP input ranges for the postflop precompute solver from the
+// base preflop range table plus an optional heuristic overlay.
 // keyed by BET LEVEL (srp / 3bet / 4bet).
 //
 // Model:  matchup key `AGG_CALLER` (first position = aggressor) + bet level.
@@ -11,9 +11,9 @@
 //   preflop table each side is read from is listed explicitly in BET_LEVELS
 //   (scripts/postflop_config/matchups.mjs):
 //
-//     srp : agg open  = rfi[agg]                caller flat = vs_raise[agg_caller].call
-//     3bet: agg 3bet  = vs_raise[caller_agg].raise   caller call = vs_3bet[caller_agg].call
-//     4bet: agg 4bet  = vs_3bet[agg_caller].raise    caller call = vs_4bet[agg_caller].call
+//     srp : agg open  = rfi[agg]                     caller flat = vs_raise[caller_agg].call
+//     3bet: agg 3bet  = vs_raise[agg_caller].raise    caller call = vs_3bet[caller_agg].call
+//     4bet: agg 4bet  = vs_3bet[agg_caller].raise     caller call = vs_4bet[caller_agg].call
 //
 //   The two ranges are then placed into OOP / IP by postflop position
 //   (POSTFLOP_ORDER: blinds act first postflop, button last) — NOT by who is
@@ -89,17 +89,38 @@ function sortHands(set) {
 // `window.GTO.Data.PreflopRanges`; run it in a VM with a self-referential
 // `window` so both `window.GTO` and the bare `GTO` references resolve.
 // ---------------------------------------------------------------------------
-function loadPreflopRanges() {
-  const path = join(PROJECT_ROOT, 'preflop-lookup', 'preflop-ranges.js');
-  if (!existsSync(path)) throw new Error(`Preflop ranges not found: ${path}`);
+function loadPreflopRangesFile(path, globalKey = 'PreflopRanges') {
+  if (!existsSync(path)) return null;
   const content = readFileSync(path, 'utf-8');
   const sandbox = {};
   sandbox.window = sandbox;               // window === global, so bare GTO works
   createContext(sandbox);
   runInContext(content, sandbox);
-  const ranges = sandbox.GTO?.Data?.PreflopRanges;
-  if (!ranges) throw new Error('Could not read GTO.Data.PreflopRanges from lookup file.');
+  const ranges = sandbox.GTO?.Data?.[globalKey];
+  if (!ranges) throw new Error(`Could not read GTO.Data.${globalKey} from lookup file.`);
   return ranges;
+}
+
+function deepMerge(base, extra) {
+  if (!extra || typeof extra !== 'object' || Array.isArray(extra)) return base;
+  const out = (base && typeof base === 'object' && !Array.isArray(base)) ? { ...base } : {};
+  for (const [k, v] of Object.entries(extra)) {
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      out[k] = deepMerge(out[k], v);
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
+
+function loadPreflopRanges() {
+  const basePath = join(PROJECT_ROOT, 'preflop-lookup', 'preflop-ranges.js');
+  const heuristicPath = join(PROJECT_ROOT, 'preflop-lookup', 'preflop-ranges-heuristic-for-input.js');
+  const base = loadPreflopRangesFile(basePath);
+  if (!base) throw new Error(`Preflop ranges not found: ${basePath}`);
+  const heuristic = loadPreflopRangesFile(heuristicPath, 'PreflopRangesHeuristicInput');
+  return heuristic ? deepMerge(base, heuristic) : base;
 }
 
 // ---------------------------------------------------------------------------
@@ -162,7 +183,7 @@ function main() {
     if (!BET_LEVELS[lvl]) throw new Error(`Unknown case "${lvl}". Valid: ${Object.keys(BET_LEVELS).join(', ')}`);
   }
 
-  console.log(`[bridge] Source: preflop-lookup/preflop-ranges.js  ${FORMAT}/${STACK}`);
+  console.log(`[bridge] Source: preflop-lookup/preflop-ranges.js (+ heuristic-for-input if present)  ${FORMAT}/${STACK}`);
   console.log(`[bridge] Levels: ${levelKeys.join(', ')} (min mixed weight ${MIN_WEIGHT})`);
   console.log('');
 
@@ -199,7 +220,7 @@ function main() {
 
   const output = {
     generated: new Date().toISOString(),
-    source: `preflop-lookup/preflop-ranges.js ${FORMAT}/${STACK}`,
+    source: `preflop-lookup/preflop-ranges.js + preflop-ranges-heuristic-for-input.js ${FORMAT}/${STACK}`,
     minMixedWeight: MIN_WEIGHT,
     cases,
   };

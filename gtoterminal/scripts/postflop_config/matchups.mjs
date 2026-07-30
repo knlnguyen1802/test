@@ -36,21 +36,26 @@ export function postflopPosition(a, b) {
 //   'agg'        → agg                (rfi is keyed by a single seat)
 //   'agg_caller' → `${agg}_${caller}`
 //   'caller_agg' → `${caller}_${agg}`
-// The preflop tables are keyed by the pot's first raiser. At srp/4bet the
-// aggressor IS that first raiser, so the key is agg_caller. At 3bet the caller
-// was the first raiser (the aggressor just 3bet), so the key flips to caller_agg.
+// The preflop tables are now keyed HERO_VILLAIN (hero = the seat whose range is
+// stored, i.e. the one facing the action). So the key is whichever seat is the
+// hero at that decision:
+//   srp  caller flats vs agg's open   -> hero=caller  -> vs_raise[caller_agg]
+//   3bet agg 3bets vs caller's open   -> hero=agg     -> vs_raise[agg_caller]
+//   3bet caller calls agg's 3bet      -> hero=caller  -> vs_3bet[caller_agg]
+//   4bet agg 4bets vs caller's 3bet   -> hero=agg     -> vs_3bet[agg_caller]
+//   4bet caller calls agg's 4bet      -> hero=caller  -> vs_4bet[caller_agg]
 export const BET_LEVELS = {
   srp: {
     agg:    { table: 'rfi',      keyBy: 'agg',        take: 'raise' },
-    caller: { table: 'vs_raise', keyBy: 'agg_caller', take: 'call'  },
+    caller: { table: 'vs_raise', keyBy: 'caller_agg', take: 'call'  },
   },
   '3bet': {
-    agg:    { table: 'vs_raise', keyBy: 'caller_agg', take: 'raise' },
+    agg:    { table: 'vs_raise', keyBy: 'agg_caller', take: 'raise' },
     caller: { table: 'vs_3bet',  keyBy: 'caller_agg', take: 'call'  },
   },
   '4bet': {
     agg:    { table: 'vs_3bet',  keyBy: 'agg_caller', take: 'raise' },
-    caller: { table: 'vs_4bet',  keyBy: 'agg_caller', take: 'call'  },
+    caller: { table: 'vs_4bet',  keyBy: 'caller_agg', take: 'call'  },
   },
 };
 

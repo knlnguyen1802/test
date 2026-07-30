@@ -112,7 +112,7 @@ A consumer only needs the **installed package** plus a way to point at the data
    ```
    ```python
    gto = GTOLookup.from_config_dict({
-       "preflop": {"path": "preflop-ranges.js", "var": "GTO.Data.PreflopRanges"},
+      "preflop": {"path": "preflop-ranges.js", "var": "GTO.Data.PreflopRanges"},
        "bet_levels": {"srp": {
            "flop":  {"path": "postflop-solutions-srp.js",      "var": "GTO.Data.PostflopSolutions_SRP"},
            "turn":  {"path": "postflop-solutions-turn-srp.js", "var": "GTO.Data.PostflopSolutionsTurn_SRP"},

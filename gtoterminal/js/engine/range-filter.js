@@ -23,8 +23,8 @@ GTO.Engine.RangeFilter = {
     var ipPos = matchup.ip;   // e.g., 'BB', 'SB'
 
     // OOP is always the raiser (RFI from their position)
-    // IP is defending vs raise (keyed as RAISER_DEFENDER in PreflopRanges)
-    var ipKey = oopPos + '_' + ipPos; // e.g., 'BTN_BB', 'SB_BB', 'UTG_BB'
+    // IP is defending vs raise. Keys are hero_villain (hero = the IP defender).
+    var ipKey = ipPos + '_' + oopPos; // e.g., 'BB_BTN', 'BB_SB', 'BB_UTG'
 
     return {
       oopAction: 'raise',

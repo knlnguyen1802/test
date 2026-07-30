@@ -535,8 +535,8 @@ GTO.App = {
       if (villainRow) villainRow.classList.remove('hidden');
       var posKey = scenario.positionKey || '';
       var parts = posKey.split('_');
-      // vs_raise: villain_hero, vs_3bet: hero_villain, vs_4bet: villain_hero
-      var villain = scenario.actionContext === 'vs_3bet' ? parts[1] : parts[0];
+      // All facing-action keys are hero_villain (hero = position, villain second).
+      var villain = parts[1];
       if (villain) setToggle('explore-villain', villain);
     }
 
@@ -2250,8 +2250,8 @@ GTO.App = {
       if (actionCtx === 'vs_raise' || actionCtx === 'vs_3bet' || actionCtx === 'vs_4bet') {
         var villainEl = document.querySelector('#explore-villain .toggle-option.active');
         var villain = villainEl ? villainEl.getAttribute('data-value') : 'UTG';
-        // vs_raise: villain_hero, vs_3bet: hero_villain, vs_4bet: villain_hero
-        positionKey = actionCtx === 'vs_3bet' ? position + '_' + villain : villain + '_' + position;
+        // All facing-action keys are hero_villain.
+        positionKey = position + '_' + villain;
       }
 
       // Build range data for the scenario
@@ -2383,7 +2383,7 @@ GTO.App = {
     if (actionCtx !== 'rfi') {
       var villainEl = document.querySelector('#explore-villain .toggle-option.active');
       var villain = villainEl ? villainEl.getAttribute('data-value') : 'UTG';
-      positionKey = actionCtx === 'vs_3bet' ? position + '_' + villain : villain + '_' + position;
+      positionKey = position + '_' + villain;
     }
 
     // Show progress
@@ -2575,10 +2575,10 @@ GTO.App = {
 
   _positionToMatchup: function(position) {
     var map = {
-      'UTG': 'UTG_vs_BB', 'MP': 'UTG_vs_BB', 'CO': 'CO_vs_BB',
-      'BTN': 'BTN_vs_BB', 'SB': 'SB_vs_BB'
+      'UTG': 'UTG_BB', 'MP': 'UTG_BB', 'CO': 'CO_BB',
+      'BTN': 'BTN_BB', 'SB': 'SB_BB'
     };
-    return map[position] || 'BTN_vs_BB';
+    return map[position] || 'BTN_BB';
   },
 
   _transitionToPostflopExplore: function() {
@@ -3119,7 +3119,7 @@ GTO.App = {
     var matchupEl = document.querySelector('#solver-matchup .toggle-option.active');
 
     var depth = depthEl ? depthEl.getAttribute('data-value') : '100bb';
-    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_vs_BB';
+    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_BB';
 
     // Board from card picker (need at least 3 = flop)
     var boardCards = this._selectedBoardCards || [];
@@ -3149,15 +3149,7 @@ GTO.App = {
     GTO.UI.HUD.updateStat('solver-stat-board', boardLabel || boardCards.join(' ').toUpperCase());
     GTO.UI.HUD.updateStat('solver-stat-texture', boardLabel ? boards.find(function(b) { return b.label === boardLabel; }).texture.replace(/_/g, ' ') : 'custom');
 
-    // Check pre-computed solutions (depth-aware, only for matching preset boards)
-    var cached = null;
-    if (boardLabel) {
-      var varName = depth === '100bb' ? 'PostflopSolutions' : 'PostflopSolutions_' + depth.replace('bb', 'BB');
-      var solutions = GTO.Data[varName];
-      if (solutions && solutions[matchupKey] && solutions[matchupKey][boardLabel] && !solutions[matchupKey][boardLabel].error) {
-        cached = solutions[matchupKey][boardLabel];
-      }
-    }
+    // Let solveWithCache handle the precomputed lookup (async fetch).
 
     var loadingEl = document.getElementById('solver-loading');
     var matrixLoading = document.getElementById('explore-matrix-loading');
@@ -3195,6 +3187,7 @@ GTO.App = {
 
     initPromise.then(function() {
       return GTO.Solver.solveWithCache({
+        depth: depth,
         oopRange: matchup.oopRange,
         ipRange: matchup.ipRange,
         board: boardCards,
@@ -3224,6 +3217,7 @@ GTO.App = {
           actions: results.actions,
           strategy: results.strategy,
           player: results.player || 'oop',
+          nodes: results.nodes || null,
           oopEV: results.oopEV,
           ipEV: results.ipEV,
           exploitability: results.solveInfo ? results.solveInfo.exploitability : null,
@@ -3311,7 +3305,7 @@ GTO.App = {
 
     // ── Update the range matrix with postflop data ──
     var matchupEl = document.querySelector('#solver-matchup .toggle-option.active');
-    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_vs_BB';
+    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_BB';
     var matchup = GTO.Data.PostflopMatchups ? GTO.Data.PostflopMatchups[matchupKey] : null;
     if (matchup) {
       var rangeData = this._buildPostflopRangeDataFromCache(cached, matchup);
@@ -3551,7 +3545,7 @@ GTO.App = {
 
     // ── OOP Range Composition ──
     var matchupEl = document.querySelector('#solver-matchup .toggle-option.active');
-    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_vs_BB';
+    var matchupKey = matchupEl ? matchupEl.getAttribute('data-value') : 'SB_BB';
     this._renderSolverComposition(boardCards, matchupKey);
   },
 
