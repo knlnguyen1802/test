@@ -1373,7 +1373,7 @@ fn main() {
                 }
 
                 let mut turn_hist = flop_hist.clone();
-                turn_hist.push(group);
+                turn_hist.push(pc as usize);
                 let turn_card_str = index_to_card(pc);
 
                 let mut turn_board_ids = flop_board.clone();
@@ -1462,7 +1462,7 @@ fn main() {
                     }
 
                     let mut river_hist = river_chance_hist.clone();
-                    river_hist.push(rgroup);
+                    river_hist.push(rc as usize);
                     let mut river_board_ids = flop_board.clone();
                     river_board_ids.push(pc);
                     river_board_ids.push(rc);

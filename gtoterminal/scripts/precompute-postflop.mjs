@@ -764,7 +764,7 @@ if (IS_CHILD) {
         seenTurnGroups.add(turnGroup);
 
         const turnCardStr = indexToCard(turnCardId);
-        const turnHist = [...flopHist, turnGroup];
+        const turnHist = [...flopHist, turnCardId];
 
         // ── Turn strategies ──
         const turnResult = extractStreetNodes(turnHist);
@@ -795,7 +795,7 @@ if (IS_CHILD) {
             if (seenRiverGroups.has(riverGroup)) continue;
             seenRiverGroups.add(riverGroup);
 
-            const riverHist = [...riverChanceHist, riverGroup];
+            const riverHist = [...riverChanceHist, riverCardId];
             const riverResult = extractStreetNodes(riverHist);
             if (!riverResult) continue;
             riverCards[indexToCard(riverCardId)] = riverResult.strategies;
