@@ -641,6 +641,10 @@ if (IS_CHILD) {
     bet_large_raise_call:  ['BetLarge', 'Raise', 'Call'],
     xbet_small_raise_call: ['Check', 'BetSmall', 'Raise', 'Call'],
     xbet_large_raise_call: ['Check', 'BetLarge', 'Raise', 'Call'],
+    bet_small_raise_raise_call:  ['BetSmall', 'Raise', 'Raise', 'Call'],
+    bet_large_raise_raise_call:  ['BetLarge', 'Raise', 'Raise', 'Call'],
+    xbet_small_raise_raise_call: ['Check', 'BetSmall', 'Raise', 'Raise', 'Call'],
+    xbet_large_raise_raise_call: ['Check', 'BetLarge', 'Raise', 'Raise', 'Call'],
   };
 
   // Helper: verify a history reaches a chance node.
@@ -764,7 +768,7 @@ if (IS_CHILD) {
         seenTurnGroups.add(turnGroup);
 
         const turnCardStr = indexToCard(turnCardId);
-        const turnHist = [...flopHist, turnGroup];
+        const turnHist = [...flopHist, turnCardId];
 
         // ── Turn strategies ──
         const turnResult = extractStreetNodes(turnHist);
@@ -795,7 +799,7 @@ if (IS_CHILD) {
             if (seenRiverGroups.has(riverGroup)) continue;
             seenRiverGroups.add(riverGroup);
 
-            const riverHist = [...riverChanceHist, riverGroup];
+            const riverHist = [...riverChanceHist, riverCardId];
             const riverResult = extractStreetNodes(riverHist);
             if (!riverResult) continue;
             riverCards[indexToCard(riverCardId)] = riverResult.strategies;

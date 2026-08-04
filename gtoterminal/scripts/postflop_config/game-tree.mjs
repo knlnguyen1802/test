@@ -17,7 +17,9 @@
 // all-in thresholds passed to manager.init()).
 //   donk (OOP lead) enabled at 50% on turn & river
 //   flop bet 33%/75%, turn bet 33%/75%, river bet 25%/100%
-//   raise 60% on every street
+//   raise 60% on every street and at every legal raise/re-raise level
+// A separate re-raise size is not needed: the solver reuses each player's
+// street raise size until stack/all-in thresholds close the betting.
 export const LINE_BET_SIZES = {
   oopFlopBet: '33%,75%',           oopFlopRaise: '60%',
   oopTurnBet: '33%,75%',           oopTurnRaise: '60%', oopTurnDonk: '50%',

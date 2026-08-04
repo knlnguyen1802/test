@@ -19,7 +19,7 @@ Two structures are addressed:
 * **Flop** decision nodes are *named* (``ip_cbet`` etc.).
 * **Turn / river** decision nodes are the 10 indexed slots ``s[0..9]``.
 
-A street "closes" (advances to the next chance card) via one of the 9
+A street "closes" (advances to the next chance card) via one of the 13
 ``ACTION_LINES``. A full turn/river line is therefore
 ``<flop-closing-line> [+ <turn-closing-line>] + <current-street-path>``.
 """
@@ -107,7 +107,7 @@ FLOP_NODE_BY_SLOT = {
 }
 
 # ---------------------------------------------------------------------------
-# 9 action lines that close a street (reach the next chance node).
+# 13 action lines that close a street (reach the next chance node).
 # name -> normalized token sequence.
 # ---------------------------------------------------------------------------
 ACTION_LINES = {
@@ -120,6 +120,10 @@ ACTION_LINES = {
     "bet_large_raise_call":  (BL, R, C),
     "xbet_small_raise_call": (X, BS, R, C),
     "xbet_large_raise_call": (X, BL, R, C),
+    "bet_small_raise_raise_call":  (BS, R, R, C),
+    "bet_large_raise_raise_call":  (BL, R, R, C),
+    "xbet_small_raise_raise_call": (X, BS, R, R, C),
+    "xbet_large_raise_raise_call": (X, BL, R, R, C),
 }
 # Longest first, so greedy matching prefers the most specific closing line.
 _CLOSING_ORDER = sorted(ACTION_LINES.items(), key=lambda kv: -len(kv[1]))
