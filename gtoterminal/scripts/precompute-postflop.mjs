@@ -641,6 +641,10 @@ if (IS_CHILD) {
     bet_large_raise_call:  ['BetLarge', 'Raise', 'Call'],
     xbet_small_raise_call: ['Check', 'BetSmall', 'Raise', 'Call'],
     xbet_large_raise_call: ['Check', 'BetLarge', 'Raise', 'Call'],
+    bet_small_raise_raise_call:  ['BetSmall', 'Raise', 'Raise', 'Call'],
+    bet_large_raise_raise_call:  ['BetLarge', 'Raise', 'Raise', 'Call'],
+    xbet_small_raise_raise_call: ['Check', 'BetSmall', 'Raise', 'Raise', 'Call'],
+    xbet_large_raise_raise_call: ['Check', 'BetLarge', 'Raise', 'Raise', 'Call'],
   };
 
   // Helper: verify a history reaches a chance node.
