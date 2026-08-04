@@ -110,11 +110,13 @@ The **10 canonical node slots** per street (indices `s[0..9]` / `bc[0..9]`,
 `OOP vs raise (bet small)`, `OOP vs raise (bet large)`, `IP vs x-raise (small)`,
 `IP vs x-raise (large)`, `IP vs large bet`, `OOP vs large probe`.
 
-The **9 action lines** that advance a street (`action_lines`,
+The **13 action lines** that advance a street (`action_lines`,
 [solver-native/src/main.rs](solver-native/src/main.rs#L1044)): `check_check`,
 `bet_small_call`, `bet_large_call`, `xbet_small_call`, `xbet_large_call`,
 `bet_small_raise_call`, `bet_large_raise_call`, `xbet_small_raise_call`,
-`xbet_large_raise_call`.
+`xbet_large_raise_call`, `bet_small_raise_raise_call`,
+`bet_large_raise_raise_call`, `xbet_small_raise_raise_call`, and
+`xbet_large_raise_raise_call`.
 
 ```mermaid
 graph TD
@@ -159,7 +161,7 @@ graph LR
 
     subgraph Data["Postflop Data Tree (on disk)"]
         D1["fixed 2 sizes -> 9-10 node slots"]
-        D2["fixed 9 action lines per street"]
+        D2["fixed 13 action lines per street"]
         D3["root-only avg equity / EV"]
         D4["per-action EV dropped"]
         D5["reach-weighted avg + 18 classes"]
